@@ -9,6 +9,7 @@ import KeywordOptimization from "@/pages/keyword-optimization";
 import AudienceTargeting from "@/pages/audience-targeting";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
+import AdBuilder from "@/pages/ad-builder";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/keyword-optimization" component={KeywordOptimization}/>
       <Route path="/audience-targeting" component={AudienceTargeting}/>
       <Route path="/analytics" component={Analytics}/>
+      <Route path="/ad-builder" component={AdBuilder}/>
       <Route path="/settings" component={Settings}/>
       {/* Fallback to 404 */}
       <Route component={NotFound} />

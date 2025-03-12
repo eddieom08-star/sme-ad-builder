@@ -8,7 +8,8 @@ import {
   BarChart2, 
   Settings,
   Menu,
-  X
+  X,
+  Megaphone
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
