@@ -84,7 +84,7 @@ const mockAdCreatives: AdCreative[] = [
 export default function AdBuilder() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedCampaign, setSelectedCampaign] = useState<string>("");
+  const [selectedCampaign, setSelectedCampaign] = useState<string>("all");
   const [selectedFormat, setSelectedFormat] = useState<string>("square");
   const [selectedPlatform, setSelectedPlatform] = useState<string>("facebook");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -108,14 +108,14 @@ export default function AdBuilder() {
   });
 
   const filteredAdCreatives = adCreatives.filter(ad => 
-    selectedCampaign ? ad.campaignId === parseInt(selectedCampaign) : true
+    selectedCampaign && selectedCampaign !== "all" ? ad.campaignId === parseInt(selectedCampaign) : true
   );
 
   const handleSaveAd = () => {
-    if (!selectedCampaign) {
+    if (!selectedCampaign || selectedCampaign === "all") {
       toast({
         title: "No campaign selected",
-        description: "Please select a campaign for this ad.",
+        description: "Please select a specific campaign for this ad.",
         variant: "destructive"
       });
       return;
@@ -235,10 +235,10 @@ export default function AdBuilder() {
   };
 
   const handleGenerateAdCopy = async () => {
-    if (!selectedCampaign) {
+    if (!selectedCampaign || selectedCampaign === "all") {
       toast({
         title: "No campaign selected",
-        description: "Please select a campaign to generate ad copy.",
+        description: "Please select a specific campaign to generate ad copy.",
         variant: "destructive"
       });
       return;
@@ -517,7 +517,7 @@ export default function AdBuilder() {
                   <SelectValue placeholder="All campaigns" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All campaigns</SelectItem>
+                  <SelectItem value="all">All campaigns</SelectItem>
                   {campaignsLoading ? (
                     <SelectItem value="loading" disabled>Loading campaigns...</SelectItem>
                   ) : campaigns?.length > 0 ? (
