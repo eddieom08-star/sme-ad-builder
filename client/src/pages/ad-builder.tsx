@@ -95,15 +95,15 @@ export default function AdBuilder() {
     description: "",
     imageUrl: "",
     ctaText: "Shop Now",
-    format: "square",
-    platform: "facebook",
-    status: "draft"
+    format: "square" as "square" | "landscape" | "story",
+    platform: "facebook" as "facebook" | "instagram" | "google",
+    status: "draft" as "draft" | "active" | "paused"
   });
   const [currentAdId, setCurrentAdId] = useState<number | null>(null);
   const [toneOfVoice, setToneOfVoice] = useState<string>("friendly");
 
   // Get campaigns
-  const { data: campaigns, isLoading: campaignsLoading } = useQuery({
+  const { data: campaigns = [], isLoading: campaignsLoading } = useQuery<Campaign[]>({
     queryKey: ["/api/campaigns"]
   });
 
@@ -176,9 +176,9 @@ export default function AdBuilder() {
       description: "",
       imageUrl: "",
       ctaText: "Shop Now",
-      format: "square",
-      platform: "facebook",
-      status: "draft"
+      format: "square" as "square" | "landscape" | "story",
+      platform: "facebook" as "facebook" | "instagram" | "google",
+      status: "draft" as "draft" | "active" | "paused"
     });
     setCurrentAdId(null);
     setIsDialogOpen(false);
@@ -365,8 +365,8 @@ export default function AdBuilder() {
                     <div className="space-y-2">
                       <Label htmlFor="platform">Platform</Label>
                       <Select 
-                        value={newAd.platform} 
-                        onValueChange={(value) => setNewAd({...newAd, platform: value})}
+                        value={newAd.platform as string} 
+                        onValueChange={(value: string) => setNewAd({...newAd, platform: value as "facebook" | "instagram" | "google"})}
                       >
                         <SelectTrigger id="platform">
                           <SelectValue placeholder="Select platform" />
@@ -383,8 +383,8 @@ export default function AdBuilder() {
                   <div className="space-y-2">
                     <Label htmlFor="format">Ad Format</Label>
                     <Select 
-                      value={newAd.format} 
-                      onValueChange={(value) => setNewAd({...newAd, format: value})}
+                      value={newAd.format as string} 
+                      onValueChange={(value: string) => setNewAd({...newAd, format: value as "square" | "landscape" | "story"})}
                     >
                       <SelectTrigger id="format">
                         <SelectValue placeholder="Select format" />
@@ -626,7 +626,7 @@ export default function AdBuilder() {
                   </div>
                 </CardContent>
                 <CardFooter className="p-4 pt-0 flex justify-between border-t border-slate-100 mt-4">
-                  <div className="text-xs text-slate-500">Campaign: {campaigns?.find((c: Campaign) => c.id === ad.campaignId)?.name || 'Unknown'}</div>
+                  <div className="text-xs text-slate-500">Campaign: {campaigns.find((c: Campaign) => c.id === ad.campaignId)?.name || 'Unknown'}</div>
                   <Select 
                     value={ad.status} 
                     onValueChange={(value: "draft" | "active" | "paused") => handleStatusChange(ad.id, value)}

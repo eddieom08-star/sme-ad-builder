@@ -52,6 +52,11 @@ export function Sidebar({ user = { name: "Sarah Johnson", businessName: "Coastal
       icon: Users,
     },
     {
+      href: "/ad-builder",
+      label: "Ad Builder",
+      icon: Megaphone,
+    },
+    {
       href: "/analytics",
       label: "Analytics",
       icon: BarChart2,
