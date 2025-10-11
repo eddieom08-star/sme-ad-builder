@@ -1,11 +1,12 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Activity, DollarSign, Target, TrendingUp, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const user = await currentUser();
 
   return (
     <div className="space-y-4 lg:space-y-6">
@@ -14,7 +15,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Dashboard</h1>
           <p className="text-sm text-muted-foreground lg:text-base">
-            Welcome back, {session?.user?.name}
+            Welcome back, {user?.firstName || user?.username || 'there'}
           </p>
         </div>
         <Link href="/campaigns/new" className="lg:hidden">

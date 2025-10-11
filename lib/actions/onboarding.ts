@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { businesses } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { businessProfilePartialSchema } from "@/lib/validations/onboarding";
 import type { BusinessProfileData } from "@/lib/store/onboarding";
@@ -17,9 +17,9 @@ export async function saveBusinessProfile(
   data: Partial<BusinessProfileData>
 ): Promise<SaveBusinessProfileResult> {
   try {
-    const session = await auth();
+    const { userId } = await auth();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -28,7 +28,7 @@ export async function saveBusinessProfile(
 
     // Check if business already exists for this user
     const existingBusiness = await db.query.businesses.findFirst({
-      where: eq(businesses.ownerId, parseInt(session.user.id)),
+      where: eq(businesses.ownerId, parseInt(userId)),
     });
 
     if (existingBusiness) {
@@ -62,7 +62,7 @@ export async function saveBusinessProfile(
           industry: validatedData.category || "Other",
           description: validatedData.description,
           website: validatedData.contact?.website,
-          ownerId: parseInt(session.user.id),
+          ownerId: parseInt(userId),
           settings: {
             services: validatedData.services,
             location: validatedData.location,
@@ -88,14 +88,14 @@ export async function saveBusinessProfile(
 
 export async function getBusinessProfile(): Promise<BusinessProfileData | null> {
   try {
-    const session = await auth();
+    const { userId } = await auth();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return null;
     }
 
     const business = await db.query.businesses.findFirst({
-      where: eq(businesses.ownerId, parseInt(session.user.id)),
+      where: eq(businesses.ownerId, parseInt(userId)),
     });
 
     if (!business) {

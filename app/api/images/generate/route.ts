@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import OpenAI from "openai";
 import { containsProhibitedTerms } from "@/lib/ai/prompt-library";
 
@@ -22,8 +22,8 @@ interface GenerateImageRequest {
 export async function POST(request: NextRequest) {
   try {
     // 1. Authentication check
-    const session = await auth();
-    if (!session?.user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -129,7 +129,7 @@ Content restrictions: No logos, no brand names, no competitor references, no med
         style,
         metadata: {
           generatedAt: new Date().toISOString(),
-          userId: session.user.id,
+          userId: userId,
           model: "dall-e-3",
         },
       },
@@ -195,9 +195,9 @@ function calculateSimilarity(text1: string, text2: string): number {
 
 // GET endpoint to check API status
 export async function GET(request: NextRequest) {
-  const session = await auth();
+  const { userId } = await auth();
 
-  if (!session?.user) {
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
