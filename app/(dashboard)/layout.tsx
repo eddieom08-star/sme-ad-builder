@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ResponsiveSidebar } from "@/components/dashboard/responsive-sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -15,11 +15,14 @@ export default async function DashboardLayout({
     redirect("/sign-in");
   }
 
-  // Get user data from Clerk for the header
+  // Get actual user data from Clerk for the header
+  const clerkUser = await currentUser();
   const user = {
-    name: null,
-    email: null,
-    image: null,
+    name: clerkUser?.firstName && clerkUser?.lastName
+      ? `${clerkUser.firstName} ${clerkUser.lastName}`
+      : clerkUser?.username || null,
+    email: clerkUser?.primaryEmailAddress?.emailAddress || null,
+    image: clerkUser?.imageUrl || null,
   };
 
   return (
