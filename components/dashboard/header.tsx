@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut } from "next-auth/react";
+import { useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const { signOut } = useClerk();
   const initials = user.name
     ? user.name
         .split(" ")
@@ -59,7 +60,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="cursor-pointer text-destructive focus:text-destructive"
-              onClick={() => signOut({ callbackUrl: "/auth/login" })}
+              onClick={() => signOut({ redirectUrl: "/" })}
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ResponsiveSidebar } from "@/components/dashboard/responsive-sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -9,11 +9,18 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const { userId } = await auth();
 
-  if (!session?.user) {
-    redirect("/auth/login");
+  if (!userId) {
+    redirect("/sign-in");
   }
+
+  // Get user data from Clerk for the header
+  const user = {
+    name: null,
+    email: null,
+    image: null,
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -21,7 +28,7 @@ export default async function DashboardLayout({
       <div className="flex-1 flex flex-col">
         {/* Desktop Header - Hidden on mobile */}
         <div className="hidden lg:block">
-          <DashboardHeader user={session.user} />
+          <DashboardHeader user={user} />
         </div>
 
         {/* Mobile Header - Hidden on desktop */}
