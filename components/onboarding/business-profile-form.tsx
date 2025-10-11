@@ -56,7 +56,7 @@ export function BusinessProfileForm() {
     mode: "onChange",
     defaultValues: {
       businessName: businessProfile.businessName || "",
-      category: businessProfile.category || "",
+      category: businessProfile.category || undefined,
       services: businessProfile.services || [],
       description: businessProfile.description || "",
       location: {
@@ -88,7 +88,7 @@ export function BusinessProfileForm() {
   // Auto-save to Zustand store
   useEffect(() => {
     const timer = setTimeout(() => {
-      updateBusinessProfile(formData);
+      updateBusinessProfile(formData as any);
       updateLastSaved();
     }, 1000);
 
@@ -123,7 +123,7 @@ export function BusinessProfileForm() {
       setIsSaving(true);
 
       // Save to Zustand store
-      updateBusinessProfile(data);
+      updateBusinessProfile(data as any);
       markStepComplete(1);
 
       // TODO: Save to database via server action

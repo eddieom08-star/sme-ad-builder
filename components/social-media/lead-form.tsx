@@ -281,7 +281,7 @@ export function LeadForm({ onContinue, onBack }: LeadFormProps) {
                               <div className="space-y-1">
                                 <Label className="text-xs">Options (comma separated)</Label>
                                 <Input
-                                  value={field.options.join(", ")}
+                                  value={field.options?.join(", ") || ""}
                                   onChange={(e) => handleUpdateFieldOptions(field.id, e.target.value)}
                                   placeholder="Option 1, Option 2, Option 3"
                                   className="text-sm"

@@ -4,13 +4,12 @@ import OpenAI from "openai";
 import { containsProhibitedTerms } from "@/lib/ai/prompt-library";
 
 // Image aspect ratios supported by DALL-E 3
-type AspectRatio = "1:1" | "16:9" | "9:16" | "4:5";
+type AspectRatio = "1:1" | "16:9" | "9:16";
 
 const ASPECT_RATIO_SIZES = {
   "1:1": "1024x1024",
   "16:9": "1792x1024",
   "9:16": "1024x1792",
-  "4:5": "1024x1280",
 } as const;
 
 interface GenerateImageRequest {

@@ -68,7 +68,7 @@ export async function saveBusinessProfile(
             location: validatedData.location,
             contact: validatedData.contact,
             hours: validatedData.hours,
-          },
+          } as any,
         })
         .returning();
 
