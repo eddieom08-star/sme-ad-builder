@@ -258,6 +258,23 @@ export const useWizardStore = create<WizardState>()(
               errors.campaignName = ['Campaign name must be at least 3 characters'];
             } else if (state.campaignName.length > 100) {
               errors.campaignName = ['Campaign name must be less than 100 characters'];
+            } else {
+              // Check for duplicate campaign names (unless editing existing campaign)
+              try {
+                const stored = localStorage.getItem('campaigns');
+                if (stored) {
+                  const campaigns = JSON.parse(stored);
+                  const duplicate = campaigns.find((c: any) =>
+                    c.name.toLowerCase() === state.campaignName.toLowerCase() &&
+                    c.id !== state.savedCampaignId?.toString()
+                  );
+                  if (duplicate) {
+                    errors.campaignName = ['A campaign with this name already exists. Please choose a unique name.'];
+                  }
+                }
+              } catch (error) {
+                console.error('Error checking campaign name uniqueness:', error);
+              }
             }
 
             if (!state.objective) {

@@ -121,9 +121,18 @@ export function WizardContainer({ children }: WizardContainerProps) {
         },
       };
 
-      // Get existing campaigns and add draft
+      // Get existing campaigns and upsert draft (prevent duplicates)
       const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-      existingCampaigns.push(fullCampaignData);
+      const existingIndex = existingCampaigns.findIndex((c: any) => c.id === campaignId.toString());
+
+      if (existingIndex !== -1) {
+        // Update existing draft
+        existingCampaigns[existingIndex] = fullCampaignData;
+      } else {
+        // Add new draft
+        existingCampaigns.push(fullCampaignData);
+      }
+
       localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
 
       toast({

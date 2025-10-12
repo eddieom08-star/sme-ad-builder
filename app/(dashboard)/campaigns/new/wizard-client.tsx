@@ -11,7 +11,7 @@ import { PreviewStep } from '@/components/campaign-wizard/steps/preview-step';
 
 export function CampaignWizardClient() {
   const searchParams = useSearchParams();
-  const { currentStep, reset, loadCampaign } = useWizardStore();
+  const { currentStep, savedCampaignId, reset, loadCampaign } = useWizardStore();
 
   // Check for edit mode and load campaign data, or reset for new campaign
   useEffect(() => {
@@ -20,11 +20,13 @@ export function CampaignWizardClient() {
     if (editCampaignId) {
       // Load existing campaign for editing
       loadCampaign(editCampaignId);
-    } else {
-      // Reset wizard for creating new campaign
+    } else if (!savedCampaignId) {
+      // Only reset if we don't have an in-progress draft
+      // If savedCampaignId exists, user is working on a draft - preserve it
       reset();
     }
-  }, [searchParams, reset, loadCampaign]);
+    // Otherwise, preserve the in-progress wizard session (draft in progress)
+  }, [searchParams, reset, loadCampaign, savedCampaignId]);
 
   return (
     <>
