@@ -13,7 +13,7 @@ export default async function CampaignsPage() {
   }
 
   // TODO: Fetch campaigns from database
-  const campaigns = [];
+  const campaigns: any[] = [];
 
   return (
     <div className="space-y-4 lg:space-y-6">

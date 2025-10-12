@@ -13,7 +13,7 @@ export default async function AdsPage() {
   }
 
   // TODO: Fetch ads from database
-  const ads = [];
+  const ads: any[] = [];
 
   return (
     <div className="space-y-4 lg:space-y-6">

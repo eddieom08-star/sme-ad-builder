@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { User, Building2, Bell, Shield, Save } from "lucide-react";
 import {
   Select,
@@ -118,7 +118,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 <Avatar className="h-16 w-16 lg:h-20 lg:w-20">
                   <AvatarImage src={userImage} alt={userName} />
                   <AvatarFallback className="text-lg lg:text-xl">
-                    {userName.split(" ").map(n => n[0]).join("").toUpperCase()}
+                    {userName.split(" ").map((n: string) => n[0]).join("").toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-1">

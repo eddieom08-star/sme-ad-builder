@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { users, businesses } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
+// import bcrypt from "bcryptjs"; // Not used - using Clerk for auth
 import { RegisterInput } from "@/types";
 
 export async function getUserByEmail(email: string) {
@@ -36,7 +36,8 @@ export async function getUserById(id: number) {
 export async function createUser(data: RegisterInput) {
   try {
     // Hash password
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    // const hashedPassword = await bcrypt.hash(data.password, 10); // Using Clerk
+    const hashedPassword = ""; // Clerk handles password hashing
 
     // Create user and business in a transaction
     const result = await db.transaction(async (tx) => {

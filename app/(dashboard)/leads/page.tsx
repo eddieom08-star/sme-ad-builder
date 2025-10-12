@@ -21,7 +21,7 @@ export default async function LeadsPage() {
   }
 
   // TODO: Fetch leads from database
-  const leads = [];
+  const leads: any[] = [];
 
   return (
     <div className="space-y-4 lg:space-y-6">

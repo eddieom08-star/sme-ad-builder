@@ -6,7 +6,7 @@ import { WizardNavigation } from './wizard-navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useState } from 'react';
 
 const WIZARD_STEPS = [
