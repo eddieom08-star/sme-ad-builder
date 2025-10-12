@@ -43,6 +43,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
     endDate,
     bidStrategy,
     ads,
+    savedCampaignId,
     setSavedCampaignId,
     updateLastSaved,
     reset,
@@ -137,6 +138,8 @@ export function WizardContainer({ children }: WizardContainerProps) {
   const handleLaunch = async () => {
     setIsLaunching(true);
     try {
+      const isEditMode = !!savedCampaignId;
+
       // First create/update the campaign
       const campaignData = {
         name: campaignName,
@@ -167,7 +170,8 @@ export function WizardContainer({ children }: WizardContainerProps) {
         throw new Error('Failed to create campaign');
       }
 
-      const { campaignId } = await campaignResponse.json();
+      const { campaignId: newCampaignId } = await campaignResponse.json();
+      const campaignId = isEditMode ? savedCampaignId : newCampaignId;
 
       // Save campaign to localStorage for display
       const fullCampaignData = {
@@ -191,10 +195,32 @@ export function WizardContainer({ children }: WizardContainerProps) {
         },
       };
 
-      // Get existing campaigns and add new one
+      // Get existing campaigns
       const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-      existingCampaigns.push(fullCampaignData);
+
+      if (isEditMode) {
+        // Update existing campaign
+        const campaignIndex = existingCampaigns.findIndex((c: any) => c.id === campaignId.toString());
+        if (campaignIndex !== -1) {
+          existingCampaigns[campaignIndex] = {
+            ...existingCampaigns[campaignIndex],
+            ...fullCampaignData,
+          };
+        }
+      } else {
+        // Add new campaign
+        existingCampaigns.push(fullCampaignData);
+      }
+
       localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
+
+      // Handle ads for the campaign
+      let existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
+
+      if (isEditMode) {
+        // Remove old ads for this campaign
+        existingAds = existingAds.filter((ad: any) => ad.campaignId !== campaignId.toString());
+      }
 
       // Create all ads for the campaign and save to localStorage
       const createdAds = [];
@@ -222,7 +248,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
         if (adResponse.ok) {
           const { adId } = await adResponse.json();
           createdAds.push({
-            id: adId.toString(),
+            id: ad.id || adId.toString(),
             campaignId: campaignId.toString(),
             name: adData.name,
             format: adData.format,
@@ -245,13 +271,14 @@ export function WizardContainer({ children }: WizardContainerProps) {
       }
 
       // Save ads to localStorage
-      const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
       existingAds.push(...createdAds);
       localStorage.setItem('ads', JSON.stringify(existingAds));
 
       toast({
-        title: 'Campaign launched!',
-        description: `"${campaignName}" is now live with ${ads.length} ad(s)`,
+        title: isEditMode ? 'Campaign updated!' : 'Campaign launched!',
+        description: isEditMode
+          ? `"${campaignName}" has been updated with ${ads.length} ad(s)`
+          : `"${campaignName}" is now live with ${ads.length} ad(s)`,
       });
 
       // Reset wizard state to allow creating new campaigns

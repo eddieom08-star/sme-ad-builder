@@ -119,6 +119,9 @@ export interface WizardState {
 
   // Reset
   reset: () => void;
+
+  // Load existing campaign for editing
+  loadCampaign: (campaignId: string) => void;
 }
 
 const initialState = {
@@ -398,6 +401,82 @@ export const useWizardStore = create<WizardState>()(
       // Reset
       reset: () => {
         set(initialState);
+      },
+
+      // Load existing campaign for editing
+      loadCampaign: (campaignId) => {
+        try {
+          // 1. Read campaigns from localStorage
+          const stored = localStorage.getItem('campaigns');
+          if (!stored) return;
+
+          const campaigns = JSON.parse(stored);
+          const campaign = campaigns.find((c: any) => c.id === campaignId);
+          if (!campaign) return;
+
+          // 2. Load ads associated with this campaign
+          const storedAds = localStorage.getItem('ads');
+          let campaignAds: AdCreative[] = [];
+          if (storedAds) {
+            const allAds = JSON.parse(storedAds);
+            const filteredAds = allAds.filter((ad: any) => ad.campaignId === campaignId);
+
+            // Convert stored ads to AdCreative format
+            campaignAds = filteredAds.map((ad: any) => ({
+              id: ad.id,
+              format: ad.format as AdFormat,
+              platform: ad.platform as Platform,
+              headline: ad.headline || '',
+              primaryText: ad.body || '',
+              description: '',
+              callToAction: ad.callToAction || '',
+              media: ad.imageUrl ? [{
+                url: ad.imageUrl,
+                type: 'image' as const,
+              }] : ad.videoUrl ? [{
+                url: ad.videoUrl,
+                type: 'video' as const,
+              }] : [],
+              destinationUrl: ad.targetUrl || '',
+            }));
+          }
+
+          // 3. Populate wizard store with campaign data
+          set({
+            campaignName: campaign.name || '',
+            campaignDescription: campaign.description || '',
+            objective: campaign.objective || 'conversions',
+            platforms: campaign.platforms || [],
+            budgetType: campaign.budgetType || 'daily',
+            budgetAmount: parseFloat(campaign.budget || '50'),
+            currency: campaign.currency || 'USD',
+            startDate: campaign.startDate || new Date().toISOString().split('T')[0],
+            endDate: campaign.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            bidStrategy: campaign.bidStrategy || 'lowest_cost',
+            bidCap: campaign.bidCap,
+            targeting: {
+              ageMin: campaign.targeting?.ageMin || 18,
+              ageMax: campaign.targeting?.ageMax || 65,
+              genders: campaign.targeting?.genders || ['all'],
+              locations: Array.isArray(campaign.targeting?.locations)
+                ? campaign.targeting.locations.map((loc: any) =>
+                    typeof loc === 'string'
+                      ? { type: 'country' as const, name: loc }
+                      : loc
+                  )
+                : [],
+              interests: campaign.targeting?.interests || [],
+              behaviors: campaign.targeting?.behaviors || [],
+              languages: campaign.targeting?.languages || ['English'],
+            },
+            ads: campaignAds,
+            savedCampaignId: parseInt(campaign.id),
+            completedSteps: campaignAds.length > 0 ? [1, 2, 3, 4] : [1, 2, 3],
+            currentStep: 1,
+          });
+        } catch (error) {
+          console.error('Error loading campaign:', error);
+        }
       },
     }),
     {

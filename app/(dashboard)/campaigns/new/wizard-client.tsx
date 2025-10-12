@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useWizardStore } from '@/lib/stores/wizard-store';
 import { CampaignSetupStep } from '@/components/campaign-wizard/steps/campaign-setup-step';
 import { TargetingStep } from '@/components/campaign-wizard/steps/targeting-step';
@@ -9,12 +10,21 @@ import { CreativeStep } from '@/components/campaign-wizard/steps/creative-step';
 import { PreviewStep } from '@/components/campaign-wizard/steps/preview-step';
 
 export function CampaignWizardClient() {
-  const { currentStep, reset } = useWizardStore();
+  const searchParams = useSearchParams();
+  const { currentStep, reset, loadCampaign } = useWizardStore();
 
-  // Reset wizard when component mounts to ensure fresh start
+  // Check for edit mode and load campaign data, or reset for new campaign
   useEffect(() => {
-    reset();
-  }, [reset]);
+    const editCampaignId = searchParams.get('edit');
+
+    if (editCampaignId) {
+      // Load existing campaign for editing
+      loadCampaign(editCampaignId);
+    } else {
+      // Reset wizard for creating new campaign
+      reset();
+    }
+  }, [searchParams, reset, loadCampaign]);
 
   return (
     <>
