@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useWizardStore } from '@/lib/stores/wizard-store';
 import { CampaignSetupStep } from '@/components/campaign-wizard/steps/campaign-setup-step';
 import { TargetingStep } from '@/components/campaign-wizard/steps/targeting-step';
@@ -8,7 +9,12 @@ import { CreativeStep } from '@/components/campaign-wizard/steps/creative-step';
 import { PreviewStep } from '@/components/campaign-wizard/steps/preview-step';
 
 export function CampaignWizardClient() {
-  const { currentStep } = useWizardStore();
+  const { currentStep, reset } = useWizardStore();
+
+  // Reset wizard when component mounts to ensure fresh start
+  useEffect(() => {
+    reset();
+  }, [reset]);
 
   return (
     <>

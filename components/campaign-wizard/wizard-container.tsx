@@ -45,6 +45,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
     ads,
     setSavedCampaignId,
     updateLastSaved,
+    reset,
   } = useWizardStore();
 
   const handleStepClick = (step: number) => {
@@ -225,6 +226,9 @@ export function WizardContainer({ children }: WizardContainerProps) {
         title: 'Campaign launched!',
         description: `"${campaignName}" is now live with ${ads.length} ad(s)`,
       });
+
+      // Reset wizard state to allow creating new campaigns
+      reset();
 
       // Redirect to campaign details
       router.push(`/campaigns/${campaignId}`);
