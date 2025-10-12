@@ -10,9 +10,9 @@ export default async function SettingsPage() {
   }
 
   // Get full user data from Clerk
-  const user = await currentUser();
+  const clerkUser = await currentUser();
 
-  if (!user) {
+  if (!clerkUser) {
     return (
       <div className="space-y-4 lg:space-y-6">
         <div>
@@ -24,6 +24,18 @@ export default async function SettingsPage() {
       </div>
     );
   }
+
+  // Serialize user object to avoid Next.js serialization errors
+  const user = {
+    id: clerkUser.id,
+    firstName: clerkUser.firstName,
+    lastName: clerkUser.lastName,
+    username: clerkUser.username,
+    imageUrl: clerkUser.imageUrl,
+    primaryEmailAddress: {
+      emailAddress: clerkUser.primaryEmailAddress?.emailAddress,
+    },
+  };
 
   return (
     <div className="space-y-4 lg:space-y-6">
