@@ -168,7 +168,8 @@ export function WizardContainer({ children }: WizardContainerProps) {
       existingCampaigns.push(fullCampaignData);
       localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
 
-      // Create all ads for the campaign
+      // Create all ads for the campaign and save to localStorage
+      const createdAds = [];
       for (const ad of ads) {
         const adData = {
           campaignId,
@@ -190,10 +191,35 @@ export function WizardContainer({ children }: WizardContainerProps) {
           body: JSON.stringify(adData),
         });
 
-        if (!adResponse.ok) {
+        if (adResponse.ok) {
+          const { adId } = await adResponse.json();
+          createdAds.push({
+            id: adId.toString(),
+            campaignId: campaignId.toString(),
+            name: adData.name,
+            format: adData.format,
+            platform: adData.platform,
+            headline: adData.headline,
+            body: adData.body,
+            callToAction: adData.callToAction,
+            imageUrl: adData.imageUrl,
+            videoUrl: adData.videoUrl,
+            targetUrl: adData.targetUrl,
+            status: adData.status,
+            createdAt: new Date().toISOString(),
+            impressions: 0,
+            clicks: 0,
+            spend: '0.00',
+          });
+        } else {
           console.error('Failed to create ad:', adData);
         }
       }
+
+      // Save ads to localStorage
+      const existingAds = JSON.parse(localStorage.getItem('ads') || '[]');
+      existingAds.push(...createdAds);
+      localStorage.setItem('ads', JSON.stringify(existingAds));
 
       toast({
         title: 'Campaign launched!',
