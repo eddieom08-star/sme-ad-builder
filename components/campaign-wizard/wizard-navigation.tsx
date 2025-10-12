@@ -10,6 +10,7 @@ interface WizardNavigationProps {
   onLaunch?: () => Promise<void>;
   isSaving?: boolean;
   isLaunching?: boolean;
+  isEditMode?: boolean;
 }
 
 export function WizardNavigation({
@@ -17,6 +18,7 @@ export function WizardNavigation({
   onLaunch,
   isSaving = false,
   isLaunching = false,
+  isEditMode = false,
 }: WizardNavigationProps) {
   const { currentStep, goBack, goNext, validateStep } = useWizardStore();
   const [isValidating, setIsValidating] = useState(false);
@@ -96,12 +98,12 @@ export function WizardNavigation({
               {isLaunching ? (
                 <>
                   <Rocket className="mr-2 h-4 w-4 animate-bounce" />
-                  Launching...
+                  {isEditMode ? 'Updating...' : 'Launching...'}
                 </>
               ) : (
                 <>
                   <Rocket className="mr-2 h-4 w-4" />
-                  Launch Campaign
+                  {isEditMode ? 'Update Campaign' : 'Launch Campaign'}
                 </>
               )}
             </Button>

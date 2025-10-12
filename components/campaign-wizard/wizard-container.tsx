@@ -348,6 +348,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
         onLaunch={currentStep === 5 ? handleLaunch : undefined}
         isSaving={isSaving}
         isLaunching={isLaunching}
+        isEditMode={!!savedCampaignId}
       />
     </div>
   );
