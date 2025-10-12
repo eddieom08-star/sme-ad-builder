@@ -92,6 +92,33 @@ export function WizardContainer({ children }: WizardContainerProps) {
       setSavedCampaignId(campaignId);
       updateLastSaved();
 
+      // Save draft to localStorage for display
+      const fullCampaignData = {
+        id: campaignId.toString(),
+        name: campaignName,
+        description: '',
+        status: 'draft' as const,
+        budget: budgetAmount.toFixed(2),
+        budgetType,
+        platforms: platforms.map(p => p as string),
+        startDate,
+        endDate,
+        createdAt: new Date().toISOString(),
+        targeting: {
+          ageMin: targeting.ageMin,
+          ageMax: targeting.ageMax,
+          genders: targeting.genders,
+          locations: targeting.locations.map(l => l.name),
+          interests: targeting.interests,
+          behaviors: targeting.behaviors,
+        },
+      };
+
+      // Get existing campaigns and add draft
+      const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
+      existingCampaigns.push(fullCampaignData);
+      localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
+
       toast({
         title: 'Draft saved',
         description: `Campaign "${campaignName}" saved as draft`,

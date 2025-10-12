@@ -49,12 +49,13 @@ export function CampaignsListClient() {
   }
 
   const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+  const draftCampaigns = campaigns.filter(c => c.status === 'draft').length;
   const totalBudget = campaigns.reduce((sum, c) => sum + parseFloat(c.budget || '0'), 0);
 
   return (
     <div className="space-y-4 lg:space-y-6">
       {/* Quick Stats */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:gap-6">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:gap-6">
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
@@ -77,6 +78,19 @@ export function CampaignsListClient() {
             <div className="text-2xl font-bold">{activeCampaigns}</div>
             <p className="text-xs text-muted-foreground">
               Currently running
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{draftCampaigns}</div>
+            <p className="text-xs text-muted-foreground">
+              Pending launch
             </p>
           </CardContent>
         </Card>
@@ -139,12 +153,14 @@ export function CampaignsListClient() {
                         className={
                           campaign.status === 'active'
                             ? 'bg-green-100 text-green-800 hover:bg-green-100'
+                            : campaign.status === 'draft'
+                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-100'
                             : campaign.status === 'paused'
                             ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
                             : 'bg-gray-100 text-gray-800 hover:bg-gray-100'
                         }
                       >
-                        {campaign.status}
+                        {campaign.status === 'draft' ? 'Draft' : campaign.status}
                       </Badge>
                     </div>
                   </div>
@@ -179,6 +195,13 @@ export function CampaignsListClient() {
                     </div>
                   </div>
                 </CardContent>
+                {campaign.status === 'draft' && (
+                  <div className="border-t bg-blue-50 dark:bg-blue-950 px-6 py-3">
+                    <p className="text-xs text-blue-800 dark:text-blue-200">
+                      <strong>Draft:</strong> This campaign hasn't been launched yet. Complete all steps in the campaign wizard and click "Launch Campaign" to activate it.
+                    </p>
+                  </div>
+                )}
               </Card>
             </Link>
           ))}
