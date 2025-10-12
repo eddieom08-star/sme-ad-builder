@@ -249,48 +249,52 @@ export function BudgetScheduleStep() {
           </p>
         </div>
 
-        <div className="space-y-2">
-          {BID_STRATEGIES.map((strategy) => {
-            const isSelected = bidStrategy === strategy.value;
+        <RadioGroup
+          value={bidStrategy}
+          onValueChange={(value) => updateBudget({ bidStrategy: value as BidStrategy })}
+        >
+          <div className="space-y-2">
+            {BID_STRATEGIES.map((strategy) => {
+              const isSelected = bidStrategy === strategy.value;
 
-            return (
-              <Card
-                key={strategy.value}
-                className={cn(
-                  'cursor-pointer transition-all hover:border-primary hover:shadow-sm',
-                  isSelected && 'border-primary bg-primary/5 shadow-sm'
-                )}
-                onClick={() => updateBudget({ bidStrategy: strategy.value })}
-              >
-                <CardHeader className="pb-3 pt-4">
-                  <div className="flex items-start gap-3">
-                    <RadioGroupItem
-                      value={strategy.value}
-                      id={strategy.value}
-                      className="mt-0.5"
-                      checked={isSelected}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor={strategy.value} className="cursor-pointer font-semibold text-sm">
-                          {strategy.label}
-                        </Label>
-                        {strategy.recommended && (
-                          <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                            Recommended
-                          </span>
-                        )}
+              return (
+                <Card
+                  key={strategy.value}
+                  className={cn(
+                    'cursor-pointer transition-all hover:border-primary hover:shadow-sm',
+                    isSelected && 'border-primary bg-primary/5 shadow-sm'
+                  )}
+                  onClick={() => updateBudget({ bidStrategy: strategy.value })}
+                >
+                  <CardHeader className="pb-3 pt-4">
+                    <div className="flex items-start gap-3">
+                      <RadioGroupItem
+                        value={strategy.value}
+                        id={strategy.value}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={strategy.value} className="cursor-pointer font-semibold text-sm">
+                            {strategy.label}
+                          </Label>
+                          {strategy.recommended && (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {strategy.description}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {strategy.description}
-                      </p>
                     </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            );
-          })}
-        </div>
+                  </CardHeader>
+                </Card>
+              );
+            })}
+          </div>
+        </RadioGroup>
       </div>
 
       {/* Bid Cap (if needed) */}
