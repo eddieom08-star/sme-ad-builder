@@ -141,6 +141,33 @@ export function WizardContainer({ children }: WizardContainerProps) {
 
       const { campaignId } = await campaignResponse.json();
 
+      // Save campaign to localStorage for display
+      const fullCampaignData = {
+        id: campaignId.toString(),
+        name: campaignName,
+        description: '',
+        status: 'active',
+        budget: budgetAmount.toFixed(2),
+        budgetType,
+        platforms: platforms.map(p => p as string),
+        startDate,
+        endDate,
+        createdAt: new Date().toISOString(),
+        targeting: {
+          ageMin: targeting.ageMin,
+          ageMax: targeting.ageMax,
+          genders: targeting.genders,
+          locations: targeting.locations.map(l => l.name),
+          interests: targeting.interests,
+          behaviors: targeting.behaviors,
+        },
+      };
+
+      // Get existing campaigns and add new one
+      const existingCampaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
+      existingCampaigns.push(fullCampaignData);
+      localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
+
       // Create all ads for the campaign
       for (const ad of ads) {
         const adData = {
