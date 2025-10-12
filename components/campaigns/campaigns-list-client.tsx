@@ -5,7 +5,18 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Target, Calendar, DollarSign, Eye, MousePointerClick } from 'lucide-react';
+import { Plus, Target, Calendar, DollarSign, Eye, MousePointerClick, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Campaign {
   id: string;
@@ -22,11 +33,12 @@ interface Campaign {
 }
 
 export function CampaignsListClient() {
+  const { toast } = useToast();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [campaignToDelete, setCampaignToDelete] = useState<Campaign | null>(null);
 
-  useEffect(() => {
-    // Load campaigns from localStorage
+  const loadCampaigns = () => {
     try {
       const stored = localStorage.getItem('campaigns');
       if (stored) {
@@ -35,10 +47,57 @@ export function CampaignsListClient() {
       }
     } catch (error) {
       console.error('Error loading campaigns:', error);
-    } finally {
-      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadCampaigns();
+    setIsLoading(false);
   }, []);
+
+  const handleDeleteClick = (e: React.MouseEvent, campaign: Campaign) => {
+    e.preventDefault(); // Prevent navigation to campaign detail
+    e.stopPropagation();
+    setCampaignToDelete(campaign);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!campaignToDelete) return;
+
+    try {
+      // Remove campaign from localStorage
+      const stored = localStorage.getItem('campaigns');
+      if (stored) {
+        const allCampaigns = JSON.parse(stored);
+        const updated = allCampaigns.filter((c: Campaign) => c.id !== campaignToDelete.id);
+        localStorage.setItem('campaigns', JSON.stringify(updated));
+      }
+
+      // Remove associated ads
+      const storedAds = localStorage.getItem('ads');
+      if (storedAds) {
+        const allAds = JSON.parse(storedAds);
+        const updatedAds = allAds.filter((ad: any) => ad.campaignId !== campaignToDelete.id);
+        localStorage.setItem('ads', JSON.stringify(updatedAds));
+      }
+
+      // Update UI
+      loadCampaigns();
+
+      toast({
+        title: 'Campaign deleted',
+        description: `"${campaignToDelete.name}" has been permanently deleted.`,
+      });
+
+      setCampaignToDelete(null);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete campaign. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -151,7 +210,7 @@ export function CampaignsListClient() {
                         ))}
                       </div>
                     </div>
-                    <div className="ml-4">
+                    <div className="ml-4 flex items-center gap-2">
                       <Badge
                         className={
                           campaign.status === 'active'
@@ -165,6 +224,15 @@ export function CampaignsListClient() {
                       >
                         {campaign.status === 'draft' ? 'Draft' : campaign.status}
                       </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={(e) => handleDeleteClick(e, campaign)}
+                        title="Delete campaign"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -210,6 +278,35 @@ export function CampaignsListClient() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!campaignToDelete} onOpenChange={() => setCampaignToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Campaign?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>&quot;{campaignToDelete?.name}&quot;</strong>?
+              {campaignToDelete?.status === 'active' && (
+                <span className="block mt-2 text-red-600 font-medium">
+                  ⚠️ This campaign is currently active. Deleting it will stop all ad delivery immediately.
+                </span>
+              )}
+              <span className="block mt-2">
+                This action cannot be undone. All campaign data and associated ads will be permanently deleted.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete Campaign
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

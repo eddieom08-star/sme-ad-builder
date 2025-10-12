@@ -20,8 +20,19 @@ import {
   TrendingUp,
   Globe,
   Target,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Campaign {
   id: string;
@@ -47,6 +58,7 @@ export function CampaignDetailClient({ campaignId }: CampaignDetailClientProps) 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPausing, setIsPausing] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     // Load campaign from localStorage
@@ -108,9 +120,41 @@ export function CampaignDetailClient({ campaignId }: CampaignDetailClientProps) 
       title: 'Edit Campaign',
       description: 'Redirecting to campaign editor...',
     });
-    // For now, redirect to create new campaign
-    // TODO: Implement proper campaign editing by pre-filling wizard
     router.push(`/campaigns/new?edit=${campaignId}`);
+  };
+
+  const handleDeleteCampaign = () => {
+    try {
+      // Remove campaign from localStorage
+      const stored = localStorage.getItem('campaigns');
+      if (stored) {
+        const campaigns = JSON.parse(stored);
+        const updated = campaigns.filter((c: Campaign) => c.id !== campaignId);
+        localStorage.setItem('campaigns', JSON.stringify(updated));
+      }
+
+      // Remove associated ads
+      const storedAds = localStorage.getItem('ads');
+      if (storedAds) {
+        const allAds = JSON.parse(storedAds);
+        const updatedAds = allAds.filter((ad: any) => ad.campaignId !== campaignId);
+        localStorage.setItem('ads', JSON.stringify(updatedAds));
+      }
+
+      toast({
+        title: 'Campaign deleted',
+        description: `"${campaign?.name}" has been permanently deleted.`,
+      });
+
+      // Redirect to campaigns list
+      router.push('/campaigns');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete campaign. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -192,7 +236,7 @@ export function CampaignDetailClient({ campaignId }: CampaignDetailClientProps) 
                 {isDraft && 'This campaign is in draft status. Complete and launch to activate.'}
                 {' '}Campaign ID: #{campaign.id}
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Button
                   variant="outline"
                   size="sm"
@@ -221,6 +265,15 @@ export function CampaignDetailClient({ campaignId }: CampaignDetailClientProps) 
                     )}
                   </Button>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Campaign
+                </Button>
               </div>
             </div>
           </div>
@@ -444,6 +497,35 @@ export function CampaignDetailClient({ campaignId }: CampaignDetailClientProps) 
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Campaign?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>&quot;{campaign.name}&quot;</strong>?
+              {isActive && (
+                <span className="block mt-2 text-red-600 font-medium">
+                  ⚠️ This campaign is currently active. Deleting it will stop all ad delivery immediately.
+                </span>
+              )}
+              <span className="block mt-2">
+                This action cannot be undone. All campaign data and associated ads will be permanently deleted.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCampaign}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete Campaign
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
