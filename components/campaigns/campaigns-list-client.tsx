@@ -131,7 +131,10 @@ export function CampaignsListClient() {
       ) : (
         <div className="grid gap-4 lg:gap-6">
           {campaigns.map((campaign) => (
-            <Link key={campaign.id} href={`/campaigns/${campaign.id}`}>
+            <Link
+              key={campaign.id}
+              href={campaign.status === 'draft' ? `/campaigns/new?edit=${campaign.id}` : `/campaigns/${campaign.id}`}
+            >
               <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -198,7 +201,7 @@ export function CampaignsListClient() {
                 {campaign.status === 'draft' && (
                   <div className="border-t bg-blue-50 dark:bg-blue-950 px-6 py-3">
                     <p className="text-xs text-blue-800 dark:text-blue-200">
-                      <strong>Draft:</strong> This campaign hasn't been launched yet. Complete all steps in the campaign wizard and click "Launch Campaign" to activate it.
+                      <strong>Draft:</strong> Click to continue editing this campaign. Complete all steps and click "Launch Campaign" to activate it.
                     </p>
                   </div>
                 )}
