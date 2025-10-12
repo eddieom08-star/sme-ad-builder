@@ -1,0 +1,447 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+// Types
+export type CampaignObjective = 'awareness' | 'traffic' | 'leads' | 'conversions';
+export type Platform = 'facebook' | 'instagram' | 'google' | 'linkedin';
+export type BudgetType = 'daily' | 'lifetime';
+export type BidStrategy = 'lowest_cost' | 'cost_cap' | 'bid_cap';
+export type AdFormat = 'image' | 'video' | 'carousel' | 'story';
+export type Gender = 'male' | 'female' | 'all';
+
+export interface Location {
+  type: 'country' | 'city' | 'region';
+  name: string;
+  radius?: number; // in miles, for city targeting
+}
+
+export interface Targeting {
+  ageMin: number;
+  ageMax: number;
+  genders: Gender[];
+  locations: Location[];
+  interests: string[];
+  behaviors: string[];
+  languages?: string[];
+}
+
+export interface AdCreative {
+  id?: string; // temporary ID for multiple ads
+  format: AdFormat;
+  platform: Platform;
+  headline: string;
+  primaryText: string;
+  description?: string;
+  callToAction: string;
+  media: {
+    url: string;
+    type: 'image' | 'video';
+    width?: number;
+    height?: number;
+    thumbnail?: string; // for videos
+  }[];
+  destinationUrl: string;
+}
+
+export interface WizardState {
+  // Navigation
+  currentStep: 1 | 2 | 3 | 4 | 5;
+  completedSteps: number[];
+
+  // Step 1: Campaign Setup
+  campaignName: string;
+  campaignDescription: string;
+  objective: CampaignObjective;
+  platforms: Platform[];
+
+  // Step 2: Targeting
+  targeting: Targeting;
+
+  // Step 3: Budget & Schedule
+  budgetType: BudgetType;
+  budgetAmount: number;
+  currency: 'USD' | 'GBP' | 'EUR' | 'CAD';
+  startDate: string; // ISO date string
+  endDate: string; // ISO date string
+  bidStrategy: BidStrategy;
+  bidCap?: number; // for cost_cap and bid_cap strategies
+
+  // Step 4: Creative
+  ads: AdCreative[];
+
+  // Step 5: Review
+  isDraft: boolean;
+  validationErrors: Record<string, string[]>;
+
+  // Metadata
+  savedCampaignId?: number; // if saving draft
+  lastSaved?: string; // ISO timestamp
+
+  // Actions
+  setStep: (step: 1 | 2 | 3 | 4 | 5) => void;
+  goNext: () => void;
+  goBack: () => void;
+  markStepComplete: (step: number) => void;
+
+  // Update data
+  updateCampaignSetup: (data: {
+    campaignName?: string;
+    campaignDescription?: string;
+    objective?: CampaignObjective;
+    platforms?: Platform[];
+  }) => void;
+
+  updateTargeting: (targeting: Partial<Targeting>) => void;
+
+  updateBudget: (data: {
+    budgetType?: BudgetType;
+    budgetAmount?: number;
+    currency?: 'USD' | 'GBP' | 'EUR' | 'CAD';
+    startDate?: string;
+    endDate?: string;
+    bidStrategy?: BidStrategy;
+    bidCap?: number;
+  }) => void;
+
+  addAd: (ad: AdCreative) => void;
+  updateAd: (id: string, ad: Partial<AdCreative>) => void;
+  removeAd: (id: string) => void;
+
+  setValidationErrors: (errors: Record<string, string[]>) => void;
+  clearValidationErrors: () => void;
+
+  // Validation
+  validateStep: (step: number) => boolean;
+
+  // Persistence
+  setSavedCampaignId: (id: number) => void;
+  updateLastSaved: () => void;
+
+  // Reset
+  reset: () => void;
+}
+
+const initialState = {
+  currentStep: 1 as const,
+  completedSteps: [],
+
+  campaignName: '',
+  campaignDescription: '',
+  objective: 'conversions' as CampaignObjective,
+  platforms: [] as Platform[],
+
+  targeting: {
+    ageMin: 18,
+    ageMax: 65,
+    genders: ['all'] as Gender[],
+    locations: [],
+    interests: [],
+    behaviors: [],
+    languages: ['English'],
+  },
+
+  budgetType: 'daily' as BudgetType,
+  budgetAmount: 50,
+  currency: 'USD' as const,
+  startDate: new Date().toISOString().split('T')[0],
+  endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  bidStrategy: 'lowest_cost' as BidStrategy,
+  bidCap: undefined,
+
+  ads: [] as AdCreative[],
+
+  isDraft: false,
+  validationErrors: {},
+};
+
+export const useWizardStore = create<WizardState>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
+
+      // Navigation
+      setStep: (step) => {
+        set({ currentStep: step });
+      },
+
+      goNext: () => {
+        const { currentStep, completedSteps } = get();
+        if (currentStep < 5) {
+          const nextStep = (currentStep + 1) as 1 | 2 | 3 | 4 | 5;
+          set({
+            currentStep: nextStep,
+            completedSteps: [...new Set([...completedSteps, currentStep])],
+          });
+        }
+      },
+
+      goBack: () => {
+        const { currentStep } = get();
+        if (currentStep > 1) {
+          set({ currentStep: (currentStep - 1) as 1 | 2 | 3 | 4 | 5 });
+        }
+      },
+
+      markStepComplete: (step) => {
+        const { completedSteps } = get();
+        if (!completedSteps.includes(step)) {
+          set({ completedSteps: [...completedSteps, step] });
+        }
+      },
+
+      // Update data
+      updateCampaignSetup: (data) => {
+        set((state) => ({
+          ...state,
+          ...data,
+        }));
+      },
+
+      updateTargeting: (targeting) => {
+        set((state) => ({
+          targeting: {
+            ...state.targeting,
+            ...targeting,
+          },
+        }));
+      },
+
+      updateBudget: (data) => {
+        set((state) => ({
+          ...state,
+          ...data,
+        }));
+      },
+
+      addAd: (ad) => {
+        set((state) => ({
+          ads: [...state.ads, { ...ad, id: crypto.randomUUID() }],
+        }));
+      },
+
+      updateAd: (id, updates) => {
+        set((state) => ({
+          ads: state.ads.map((ad) =>
+            ad.id === id ? { ...ad, ...updates } : ad
+          ),
+        }));
+      },
+
+      removeAd: (id) => {
+        set((state) => ({
+          ads: state.ads.filter((ad) => ad.id !== id),
+        }));
+      },
+
+      setValidationErrors: (errors) => {
+        set({ validationErrors: errors });
+      },
+
+      clearValidationErrors: () => {
+        set({ validationErrors: {} });
+      },
+
+      // Validation
+      validateStep: (step) => {
+        const state = get();
+        const errors: Record<string, string[]> = {};
+
+        switch (step) {
+          case 1: {
+            // Campaign Setup validation
+            if (!state.campaignName.trim()) {
+              errors.campaignName = ['Campaign name is required'];
+            } else if (state.campaignName.length < 3) {
+              errors.campaignName = ['Campaign name must be at least 3 characters'];
+            } else if (state.campaignName.length > 100) {
+              errors.campaignName = ['Campaign name must be less than 100 characters'];
+            }
+
+            if (!state.objective) {
+              errors.objective = ['Campaign objective is required'];
+            }
+
+            if (state.platforms.length === 0) {
+              errors.platforms = ['Select at least one platform'];
+            }
+            break;
+          }
+
+          case 2: {
+            // Targeting validation
+            if (state.targeting.ageMin < 13) {
+              errors.ageMin = ['Minimum age must be at least 13'];
+            }
+            if (state.targeting.ageMax > 65) {
+              errors.ageMax = ['Maximum age cannot exceed 65'];
+            }
+            if (state.targeting.ageMin >= state.targeting.ageMax) {
+              errors.ageRange = ['Minimum age must be less than maximum age'];
+            }
+
+            if (state.targeting.locations.length === 0) {
+              errors.locations = ['Add at least one location'];
+            }
+
+            // Warning if no interests (not blocking)
+            if (state.targeting.interests.length === 0) {
+              errors.interests = ['Consider adding interests for better targeting (optional)'];
+            }
+            break;
+          }
+
+          case 3: {
+            // Budget validation
+            const minBudget = state.budgetType === 'daily' ? 5 : 35;
+            if (state.budgetAmount < minBudget) {
+              errors.budgetAmount = [
+                `Minimum ${state.budgetType} budget is $${minBudget}`
+              ];
+            }
+
+            if (state.budgetAmount > 10000) {
+              errors.budgetAmount = [
+                'Budget exceeds $10,000. Please contact support for higher limits.'
+              ];
+            }
+
+            const start = new Date(state.startDate);
+            const end = new Date(state.endDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (start < today) {
+              errors.startDate = ['Start date cannot be in the past'];
+            }
+
+            if (end <= start) {
+              errors.endDate = ['End date must be after start date'];
+            }
+
+            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+            if (duration < 1) {
+              errors.duration = ['Campaign must run for at least 1 day'];
+            }
+
+            if (state.bidStrategy !== 'lowest_cost' && !state.bidCap) {
+              errors.bidCap = ['Bid cap is required for this bid strategy'];
+            }
+            break;
+          }
+
+          case 4: {
+            // Creative validation
+            if (state.ads.length === 0) {
+              errors.ads = ['Create at least one ad'];
+            }
+
+            state.ads.forEach((ad, index) => {
+              if (!ad.headline.trim()) {
+                errors[`ad_${index}_headline`] = ['Headline is required'];
+              }
+
+              if (!ad.primaryText.trim()) {
+                errors[`ad_${index}_primaryText`] = ['Primary text is required'];
+              }
+
+              if (!ad.callToAction) {
+                errors[`ad_${index}_cta`] = ['Call-to-action is required'];
+              }
+
+              if (ad.media.length === 0) {
+                errors[`ad_${index}_media`] = ['Upload at least one image or video'];
+              }
+
+              if (!ad.destinationUrl || !isValidUrl(ad.destinationUrl)) {
+                errors[`ad_${index}_url`] = ['Valid destination URL is required'];
+              }
+
+              // Platform-specific validation
+              const limits = getPlatformLimits(ad.platform);
+              if (ad.headline.length > limits.headline) {
+                errors[`ad_${index}_headline`] = [
+                  `Headline must be ${limits.headline} characters or less`
+                ];
+              }
+            });
+            break;
+          }
+
+          case 5: {
+            // Final validation - check all previous steps
+            const step1Valid = get().validateStep(1);
+            const step2Valid = get().validateStep(2);
+            const step3Valid = get().validateStep(3);
+            const step4Valid = get().validateStep(4);
+
+            if (!step1Valid || !step2Valid || !step3Valid || !step4Valid) {
+              errors.overall = ['Please complete all previous steps'];
+            }
+            break;
+          }
+        }
+
+        const hasErrors = Object.keys(errors).length > 0;
+        set({ validationErrors: errors });
+        return !hasErrors;
+      },
+
+      // Persistence
+      setSavedCampaignId: (id) => {
+        set({ savedCampaignId: id });
+      },
+
+      updateLastSaved: () => {
+        set({ lastSaved: new Date().toISOString() });
+      },
+
+      // Reset
+      reset: () => {
+        set(initialState);
+      },
+    }),
+    {
+      name: 'campaign-wizard-storage',
+      partialize: (state) => ({
+        // Only persist certain fields
+        currentStep: state.currentStep,
+        completedSteps: state.completedSteps,
+        campaignName: state.campaignName,
+        campaignDescription: state.campaignDescription,
+        objective: state.objective,
+        platforms: state.platforms,
+        targeting: state.targeting,
+        budgetType: state.budgetType,
+        budgetAmount: state.budgetAmount,
+        currency: state.currency,
+        startDate: state.startDate,
+        endDate: state.endDate,
+        bidStrategy: state.bidStrategy,
+        bidCap: state.bidCap,
+        ads: state.ads,
+        savedCampaignId: state.savedCampaignId,
+        lastSaved: state.lastSaved,
+      }),
+    }
+  )
+);
+
+// Helper functions
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getPlatformLimits(platform: Platform) {
+  const limits = {
+    facebook: { headline: 40, primaryText: 125, description: 30 },
+    instagram: { headline: 40, primaryText: 2200, description: 30 },
+    google: { headline: 30, primaryText: 90, description: 90 },
+    linkedin: { headline: 70, primaryText: 150, description: 70 },
+  };
+  return limits[platform] || limits.facebook;
+}
