@@ -10,15 +10,18 @@ export async function POST(req: Request) {
     const { userId } = await auth();
 
     if (!userId) {
+      console.error('[API /ads POST] Unauthorized - no userId');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
+    console.log('[API /ads POST] Request body:', JSON.stringify(body, null, 2));
 
     // Validate request body
     const validationResult = createAdRequestSchema.safeParse(body);
 
     if (!validationResult.success) {
+      console.error('[API /ads POST] Validation failed:', validationResult.error.errors);
       return NextResponse.json(
         { error: 'Invalid request', details: validationResult.error.errors },
         { status: 400 }
@@ -26,6 +29,22 @@ export async function POST(req: Request) {
     }
 
     const data = validationResult.data;
+
+    // Check if DATABASE_URL is set
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('dummy')) {
+      console.warn('[API /ads POST] DATABASE_URL not configured, using mock response');
+
+      // Return mock success response for development
+      const mockAdId = Math.floor(Math.random() * 10000);
+      return NextResponse.json({
+        adId: mockAdId,
+        status: data.status,
+        createdAt: new Date().toISOString(),
+        message: 'Ad created successfully (mock mode - database not configured)',
+      });
+    }
+
+    console.log('[API /ads POST] Creating ad for campaignId:', data.campaignId);
 
     // Create ad
     const [ad] = await db
@@ -49,15 +68,23 @@ export async function POST(req: Request) {
       })
       .returning();
 
+    console.log('[API /ads POST] Ad created successfully:', ad.id);
+
     return NextResponse.json({
       adId: ad.id,
       status: ad.status,
       createdAt: ad.createdAt,
     });
   } catch (error) {
-    console.error('Error creating ad:', error);
+    console.error('[API /ads POST] Error creating ad:', error);
+    console.error('[API /ads POST] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('[API /ads POST] Error message:', error instanceof Error ? error.message : String(error));
+
     return NextResponse.json(
-      { error: 'Failed to create ad' },
+      {
+        error: 'Failed to create ad',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

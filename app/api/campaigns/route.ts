@@ -10,15 +10,18 @@ export async function POST(req: Request) {
     const { userId } = await auth();
 
     if (!userId) {
+      console.error('[API /campaigns POST] Unauthorized - no userId');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await req.json();
+    console.log('[API /campaigns POST] Request body:', JSON.stringify(body, null, 2));
 
     // Validate request body
     const validationResult = createCampaignRequestSchema.safeParse(body);
 
     if (!validationResult.success) {
+      console.error('[API /campaigns POST] Validation failed:', validationResult.error.errors);
       return NextResponse.json(
         { error: 'Invalid request', details: validationResult.error.errors },
         { status: 400 }
@@ -26,6 +29,20 @@ export async function POST(req: Request) {
     }
 
     const data = validationResult.data;
+
+    // Check if DATABASE_URL is set
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes('dummy')) {
+      console.warn('[API /campaigns POST] DATABASE_URL not configured, using mock response');
+
+      // Return mock success response for development
+      const mockCampaignId = Math.floor(Math.random() * 10000);
+      return NextResponse.json({
+        campaignId: mockCampaignId,
+        status: data.status,
+        createdAt: new Date().toISOString(),
+        message: 'Campaign created successfully (mock mode - database not configured)',
+      });
+    }
 
     // Get user's business (assuming first business for now)
     // In production, you'd determine which business based on context
@@ -37,6 +54,7 @@ export async function POST(req: Request) {
     let businessId: number;
 
     if (userBusinesses.length === 0) {
+      console.log('[API /campaigns POST] No business found, creating default business');
       // Create a default business if none exists
       const [newBusiness] = await db
         .insert(businesses)
@@ -51,6 +69,8 @@ export async function POST(req: Request) {
     } else {
       businessId = userBusinesses[0].id;
     }
+
+    console.log('[API /campaigns POST] Creating campaign for businessId:', businessId);
 
     // Create campaign
     const [campaign] = await db
@@ -70,15 +90,23 @@ export async function POST(req: Request) {
       })
       .returning();
 
+    console.log('[API /campaigns POST] Campaign created successfully:', campaign.id);
+
     return NextResponse.json({
       campaignId: campaign.id,
       status: campaign.status,
       createdAt: campaign.createdAt,
     });
   } catch (error) {
-    console.error('Error creating campaign:', error);
+    console.error('[API /campaigns POST] Error creating campaign:', error);
+    console.error('[API /campaigns POST] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('[API /campaigns POST] Error message:', error instanceof Error ? error.message : String(error));
+
     return NextResponse.json(
-      { error: 'Failed to create campaign' },
+      {
+        error: 'Failed to create campaign',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
