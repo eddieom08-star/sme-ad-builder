@@ -42,6 +42,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
     startDate,
     endDate,
     bidStrategy,
+    bidCap,
     ads,
     savedCampaignId,
     setSavedCampaignId,
@@ -93,25 +94,30 @@ export function WizardContainer({ children }: WizardContainerProps) {
       setSavedCampaignId(campaignId);
       updateLastSaved();
 
-      // Save draft to localStorage for display
+      // Save draft to localStorage for display and editing
       const fullCampaignData = {
         id: campaignId.toString(),
         name: campaignName,
         description: '',
         status: 'draft' as const,
+        objective,
         budget: budgetAmount.toFixed(2),
         budgetType,
+        currency,
         platforms: platforms.map(p => p as string),
         startDate,
         endDate,
+        bidStrategy,
+        bidCap,
         createdAt: new Date().toISOString(),
         targeting: {
           ageMin: targeting.ageMin,
           ageMax: targeting.ageMax,
           genders: targeting.genders,
-          locations: targeting.locations.map(l => l.name),
+          locations: targeting.locations, // Save full location objects
           interests: targeting.interests,
           behaviors: targeting.behaviors,
+          languages: targeting.languages,
         },
       };
 
