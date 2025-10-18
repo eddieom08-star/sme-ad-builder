@@ -69,8 +69,10 @@ export function CreativeStep() {
     addAd(newAd);
 
     // Set the newly created ad as current
+    // Note: addAd in wizard-store adds a UUID, so we need to get the updated ads array
     setTimeout(() => {
-      const lastAd = ads[ads.length];
+      const updatedAds = useWizardStore.getState().ads;
+      const lastAd = updatedAds[updatedAds.length - 1];
       if (lastAd?.id) {
         setCurrentAdId(lastAd.id);
       }
