@@ -119,18 +119,27 @@ export function WizardSidebar({ className }: { className?: string }) {
         </Button>
       )}
 
-      {/* Width Resizer */}
+      {/* Width Resizer - Prominent Draggable Divider */}
       {!isCollapsed && (
         <div
           ref={widthResizerRef}
           className={cn(
-            'absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 bg-transparent hover:bg-primary/30 cursor-col-resize transition-all z-40 group',
-            isResizingWidth && 'w-1.5 bg-primary/50'
+            'absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-40 group flex items-center justify-center',
+            isResizingWidth ? 'bg-primary' : 'bg-border hover:bg-primary/50'
           )}
           onMouseDown={handleWidthMouseDown}
-          style={{ marginLeft: '-4px' }}
+          style={{ marginLeft: '-0.5px' }}
         >
-          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-border group-hover:bg-primary/50 transition-colors" />
+          {/* Hover area - wider for easier grabbing */}
+          <div className="absolute inset-y-0 -left-2 -right-2 hover:bg-primary/10" />
+
+          {/* Visual grip indicator */}
+          <div className={cn(
+            'absolute top-1/2 -translate-y-1/2 w-1 h-12 rounded-full transition-all',
+            isResizingWidth
+              ? 'bg-primary shadow-lg'
+              : 'bg-border group-hover:bg-primary group-hover:h-16'
+          )} />
         </div>
       )}
 
