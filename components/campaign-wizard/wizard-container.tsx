@@ -444,7 +444,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
       </div>
 
       {/* Right Sidebar - Ad Preview & AI Agent */}
-      <WizardSidebar className="hidden xl:flex w-[400px] 2xl:w-[480px]" />
+      <WizardSidebar className="hidden xl:flex flex-shrink-0" />
     </div>
   );
 }

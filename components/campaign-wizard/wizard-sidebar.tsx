@@ -10,14 +10,22 @@ import { cn } from '@/lib/utils';
 export function WizardSidebar({ className }: { className?: string }) {
   const [previewHeight, setPreviewHeight] = useState(50); // Percentage
   const [isResizing, setIsResizing] = useState(false);
+  const [isResizingWidth, setIsResizingWidth] = useState(false);
   const [activePanel, setActivePanel] = useState<'preview' | 'chat' | 'both'>('both');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(400); // Default width in pixels
   const sidebarRef = useRef<HTMLDivElement>(null);
   const resizerRef = useRef<HTMLDivElement>(null);
+  const widthResizerRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsResizing(true);
+  };
+
+  const handleWidthMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingWidth(true);
   };
 
   useEffect(() => {
@@ -46,6 +54,40 @@ export function WizardSidebar({ className }: { className?: string }) {
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isResizing]);
+
+  useEffect(() => {
+    const handleWidthMouseMove = (e: MouseEvent) => {
+      if (!isResizingWidth) return;
+
+      // Calculate new width based on distance from right edge of viewport
+      const newWidth = window.innerWidth - e.clientX;
+
+      // Constrain between 300px and 800px
+      const constrainedWidth = Math.min(Math.max(newWidth, 300), 800);
+      setSidebarWidth(constrainedWidth);
+    };
+
+    const handleWidthMouseUp = () => {
+      setIsResizingWidth(false);
+    };
+
+    if (isResizingWidth) {
+      document.addEventListener('mousemove', handleWidthMouseMove);
+      document.addEventListener('mouseup', handleWidthMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleWidthMouseMove);
+      document.removeEventListener('mouseup', handleWidthMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizingWidth]);
 
   // Quick resize presets
   const setPreset = (preset: 'even' | 'preview' | 'chat') => {
@@ -77,14 +119,30 @@ export function WizardSidebar({ className }: { className?: string }) {
         </Button>
       )}
 
+      {/* Width Resizer */}
+      {!isCollapsed && (
+        <div
+          ref={widthResizerRef}
+          className={cn(
+            'absolute left-0 top-0 bottom-0 w-1 hover:w-1.5 bg-transparent hover:bg-primary/30 cursor-col-resize transition-all z-40 group',
+            isResizingWidth && 'w-1.5 bg-primary/50'
+          )}
+          onMouseDown={handleWidthMouseDown}
+          style={{ marginLeft: '-4px' }}
+        >
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-border group-hover:bg-primary/50 transition-colors" />
+        </div>
+      )}
+
       <div
         ref={sidebarRef}
         className={cn(
-          'flex flex-col h-full border-l bg-background transition-all duration-300',
-          isResizing && 'select-none',
+          'flex flex-col h-full border-l bg-background transition-all duration-300 relative overflow-hidden',
+          (isResizing || isResizingWidth) && 'select-none',
           isCollapsed && 'translate-x-full',
           className
         )}
+        style={{ width: isCollapsed ? 0 : `${sidebarWidth}px`, minWidth: isCollapsed ? 0 : `${sidebarWidth}px` }}
       >
         {/* Header with Panel Toggles */}
         <div className="border-b px-4 py-2 flex items-center justify-between bg-muted/30">
@@ -158,13 +216,13 @@ export function WizardSidebar({ className }: { className?: string }) {
       {/* Content */}
       <div className="flex-1 overflow-hidden relative">
         {activePanel === 'preview' && (
-          <div className="h-full overflow-auto">
+          <div className="h-full overflow-y-auto overflow-x-hidden">
             <AdPreviewPanel />
           </div>
         )}
 
         {activePanel === 'chat' && (
-          <div className="h-full">
+          <div className="h-full overflow-x-hidden">
             <AdAgentChat />
           </div>
         )}
@@ -173,7 +231,7 @@ export function WizardSidebar({ className }: { className?: string }) {
           <>
             {/* Top Panel - Ad Preview */}
             <div
-              className="overflow-auto"
+              className="overflow-y-auto overflow-x-hidden"
               style={{ height: `${previewHeight}%` }}
             >
               <AdPreviewPanel />
@@ -200,7 +258,7 @@ export function WizardSidebar({ className }: { className?: string }) {
 
             {/* Bottom Panel - AI Agent */}
             <div
-              className="overflow-hidden"
+              className="overflow-x-hidden"
               style={{ height: `${100 - previewHeight}%` }}
             >
               <AdAgentChat />
