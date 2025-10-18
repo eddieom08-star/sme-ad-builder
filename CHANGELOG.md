@@ -2,6 +2,75 @@
 
 All notable changes to the SME Ad Builder project.
 
+## [2025-01-18] - Critical Draft Save Bug Fixes
+
+### 🐛 Critical Bug Fixes
+
+#### Draft Save Workflow - Complete Overhaul
+**Problem**: Multiple critical issues with draft saving:
+1. Clicking "Save Draft" multiple times created duplicate campaigns in the list
+2. After saving, users were redirected to wrong wizard step (step 3) instead of campaigns list
+3. Success notification was not visible to users
+4. Stale wizard state persisted after save, causing confusion
+
+**Root Cause Analysis**:
+- The `savedCampaignId` was correctly reused, but wizard state (including `currentStep`) persisted in Zustand storage
+- After redirect to `/campaigns`, returning to wizard retained old `currentStep` value
+- No explicit state reset after successful save led to stale data on subsequent visits
+- Toast notification appeared but redirect happened too fast for visibility
+
+**Solution Implemented**:
+```typescript
+// BEFORE: Wizard state persisted after save
+toast({ title: 'Draft saved!' });
+setTimeout(() => router.push('/campaigns'), 1500);
+
+// AFTER: Explicit reset before redirect
+toast({ title: 'Draft saved!', duration: 3000 });
+reset(); // Clear ALL wizard state including savedCampaignId and currentStep
+setTimeout(() => router.push('/campaigns'), 800);
+```
+
+**Files Changed**:
+- `components/campaign-wizard/wizard-container.tsx` (line 153)
+  - Added `reset()` call BEFORE redirect
+  - Reduced redirect delay to 800ms for better UX
+  - Increased toast duration to 3000ms for visibility
+
+**Impact**:
+- ✅ **No more duplicate drafts** - Wizard resets completely after save
+- ✅ **Correct redirect** - Always goes to campaigns list, never back to wizard
+- ✅ **Success notification visible** - Toast appears for full 3 seconds
+- ✅ **Clean state** - Next wizard visit starts fresh from step 1
+
+**Testing**:
+- Click "Save Draft" multiple times → Only ONE campaign created
+- Check campaigns list after save → No duplicates
+- Return to wizard → Starts at step 1, not step 3/4
+- Watch for toast → Clearly visible for 3 seconds
+
+#### Cleanup Utility for Existing Duplicates
+**Added**: Browser console script to remove duplicate campaigns
+
+**Files Added**:
+- `scripts/cleanup-duplicates.js` - Browser-ready cleanup script
+- `scripts/cleanup-duplicates.ts` - TypeScript version for reference
+
+**Usage**:
+1. Open https://sme-ad-builder.vercel.app
+2. Open DevTools (F12) → Console
+3. Copy/paste `scripts/cleanup-duplicates.js`
+4. Press Enter
+5. Refresh page to see cleaned list
+
+**What It Does**:
+- Finds all campaigns with duplicate names (case-insensitive)
+- Keeps the most recent version of each duplicate
+- Removes older duplicates and their associated ads
+- Logs detailed cleanup report
+
+---
+
 ## [2025-01-18] - Campaign Management & Testing Infrastructure
 
 ### 🎉 Major Features Added

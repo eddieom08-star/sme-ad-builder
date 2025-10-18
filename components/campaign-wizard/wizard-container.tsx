@@ -95,10 +95,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
 
         const result = await response.json();
         campaignId = result.campaignId;
-        setSavedCampaignId(campaignId);
       }
-
-      updateLastSaved();
 
       // Save draft to localStorage for display and editing
       const fullCampaignData = {
@@ -141,15 +138,24 @@ export function WizardContainer({ children }: WizardContainerProps) {
 
       localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
 
+      // Show success message
       toast({
         title: 'Draft saved successfully!',
         description: `"${campaignName}" has been saved as a draft. You can continue editing anytime.`,
+        duration: 3000,
       });
 
-      // Redirect to campaigns list to show the saved draft
+      // CRITICAL FIX: Reset wizard state BEFORE redirect
+      // This ensures next visit to wizard starts fresh, preventing:
+      // 1. Duplicate drafts (no stale savedCampaignId)
+      // 2. Wrong step on return (currentStep reset to 1)
+      // 3. Stale wizard data
+      reset();
+
+      // Redirect to campaigns list after a short delay for toast visibility
       setTimeout(() => {
         router.push('/campaigns');
-      }, 1500); // Give user time to see the success message
+      }, 800);
     } catch (error) {
       toast({
         title: 'Error',
