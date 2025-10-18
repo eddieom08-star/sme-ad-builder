@@ -124,27 +124,31 @@ export function WizardSidebar({ className }: { className?: string }) {
         <div
           ref={widthResizerRef}
           className={cn(
-            'absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 transition-all duration-200',
-            isResizingWidth ? 'bg-primary w-2' : 'bg-border hover:bg-primary/70 hover:w-2'
+            'absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-all duration-200 group',
+            isResizingWidth ? 'bg-primary/80' : 'bg-border/60 hover:bg-primary/60'
           )}
           onMouseDown={handleWidthMouseDown}
           style={{
-            marginLeft: '-3px', // Position it to overlap the border
+            marginLeft: '-4px', // Position it to overlap the border
           }}
         >
-          {/* Wider hover area for easier grabbing */}
-          <div
-            className="absolute inset-y-0 -left-3 -right-3"
-            style={{ pointerEvents: 'auto' }}
-          />
-
-          {/* Visual grip indicator - always visible */}
+          {/* Wider hover area for easier grabbing - now visible with background */}
           <div
             className={cn(
-              'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-16 rounded-full transition-all duration-200',
+              'absolute inset-y-0 -left-4 -right-4 transition-colors',
               isResizingWidth
-                ? 'bg-primary-foreground shadow-lg h-20'
-                : 'bg-muted-foreground/40 hover:bg-primary-foreground hover:h-20'
+                ? 'bg-primary/10'
+                : 'bg-transparent group-hover:bg-primary/5'
+            )}
+          />
+
+          {/* Visual grip indicator - always visible and prominent */}
+          <div
+            className={cn(
+              'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-20 rounded-full transition-all duration-200 shadow-sm',
+              isResizingWidth
+                ? 'bg-primary shadow-lg h-24 w-2'
+                : 'bg-muted-foreground/60 group-hover:bg-primary group-hover:h-24 group-hover:w-2'
             )}
           />
         </div>

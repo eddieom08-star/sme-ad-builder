@@ -126,27 +126,28 @@ export function DashboardNav() {
       "border-r bg-card transition-all duration-300",
       isCollapsed ? "w-16" : "w-64"
     )}>
-      <div className="flex h-16 items-center justify-between border-b px-4">
+      <div className={cn(
+        "flex h-16 items-center border-b",
+        isCollapsed ? "justify-center px-2" : "justify-between px-4"
+      )}>
         {!isCollapsed && (
           <Link href="/dashboard" className="flex items-center space-x-2">
             <Target className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">AdBuilder</span>
           </Link>
         )}
-        {isCollapsed && (
-          <Link href="/dashboard" className="flex items-center justify-center w-full">
-            <Target className="h-6 w-6 text-primary" />
-          </Link>
-        )}
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="h-6 w-6 shrink-0"
+          className={cn(
+            "shrink-0 transition-all",
+            isCollapsed ? "h-8 w-8" : "h-6 w-6"
+          )}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-3 w-3" />
+            <PanelLeftOpen className="h-4 w-4" />
           ) : (
             <PanelLeftClose className="h-3 w-3" />
           )}
