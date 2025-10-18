@@ -142,13 +142,13 @@ export function DashboardNav() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="h-8 w-8 shrink-0"
+          className="h-6 w-6 shrink-0"
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4" />
+            <PanelLeftOpen className="h-3 w-3" />
           ) : (
-            <PanelLeftClose className="h-4 w-4" />
+            <PanelLeftClose className="h-3 w-3" />
           )}
         </Button>
       </div>
