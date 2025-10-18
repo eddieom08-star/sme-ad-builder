@@ -3,6 +3,7 @@
 import { useWizardStore } from '@/lib/stores/wizard-store';
 import { WizardProgress } from './wizard-progress';
 import { WizardNavigation } from './wizard-navigation';
+import { WizardSidebar } from './wizard-sidebar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -385,57 +386,65 @@ export function WizardContainer({ children }: WizardContainerProps) {
   const hasErrors = Object.keys(validationErrors).length > 0;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1 space-y-6 p-4 lg:p-8 pb-24">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
-            Create Campaign
-          </h1>
-          <p className="text-sm text-muted-foreground lg:text-base">
-            Build your advertising campaign step by step
-          </p>
+    <div className="flex h-screen overflow-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 overflow-auto">
+          <div className="space-y-6 p-4 lg:p-8 pb-24">
+            {/* Header */}
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
+                Create Campaign
+              </h1>
+              <p className="text-sm text-muted-foreground lg:text-base">
+                Build your advertising campaign step by step
+              </p>
+            </div>
+
+            {/* Progress Indicator */}
+            <WizardProgress
+              steps={WIZARD_STEPS}
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+              onStepClick={handleStepClick}
+            />
+
+            {/* Validation Errors */}
+            {hasErrors && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="font-semibold mb-2">Please fix the following errors:</div>
+                  <ul className="list-disc list-inside space-y-1">
+                    {Object.entries(validationErrors).map(([field, errors]) => (
+                      <li key={field} className="text-sm">
+                        {errors.join(', ')}
+                      </li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Step Content */}
+            <div className="bg-card rounded-lg border shadow-sm">
+              {children}
+            </div>
+          </div>
         </div>
 
-        {/* Progress Indicator */}
-        <WizardProgress
-          steps={WIZARD_STEPS}
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          onStepClick={handleStepClick}
+        {/* Navigation */}
+        <WizardNavigation
+          onSaveDraft={currentStep < 5 ? handleSaveDraft : undefined}
+          onLaunch={currentStep === 5 ? handleLaunch : undefined}
+          isSaving={isSaving}
+          isLaunching={isLaunching}
+          isEditMode={!!savedCampaignId}
         />
-
-        {/* Validation Errors */}
-        {hasErrors && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="font-semibold mb-2">Please fix the following errors:</div>
-              <ul className="list-disc list-inside space-y-1">
-                {Object.entries(validationErrors).map(([field, errors]) => (
-                  <li key={field} className="text-sm">
-                    {errors.join(', ')}
-                  </li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Step Content */}
-        <div className="bg-card rounded-lg border shadow-sm">
-          {children}
-        </div>
       </div>
 
-      {/* Navigation */}
-      <WizardNavigation
-        onSaveDraft={currentStep < 5 ? handleSaveDraft : undefined}
-        onLaunch={currentStep === 5 ? handleLaunch : undefined}
-        isSaving={isSaving}
-        isLaunching={isLaunching}
-        isEditMode={!!savedCampaignId}
-      />
+      {/* Right Sidebar - Ad Preview & AI Agent */}
+      <WizardSidebar className="hidden xl:flex w-[400px] 2xl:w-[480px]" />
     </div>
   );
 }
