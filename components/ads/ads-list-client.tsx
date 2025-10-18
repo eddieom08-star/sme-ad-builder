@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, FileText, Eye, MousePointer } from 'lucide-react';
+import { Plus, FileText, Eye, MousePointer, FileEdit } from 'lucide-react';
 
 interface Ad {
   id: string;
@@ -27,6 +28,8 @@ interface Ad {
 }
 
 export function AdsListClient() {
+  const searchParams = useSearchParams();
+  const statusFilter = searchParams.get('status');
   const [ads, setAds] = useState<Ad[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,13 +54,36 @@ export function AdsListClient() {
     );
   }
 
+  // Filter ads based on status parameter
+  const filteredAds = statusFilter
+    ? ads.filter(ad => ad.status === statusFilter)
+    : ads;
+
   const activeAds = ads.filter(a => a.status === 'active').length;
-  const totalImpressions = ads.reduce((sum, a) => sum + (a.impressions || 0), 0);
-  const totalClicks = ads.reduce((sum, a) => sum + (a.clicks || 0), 0);
+  const draftAds = ads.filter(a => a.status === 'draft').length;
+  const totalImpressions = filteredAds.reduce((sum, a) => sum + (a.impressions || 0), 0);
+  const totalClicks = filteredAds.reduce((sum, a) => sum + (a.clicks || 0), 0);
   const avgCTR = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '0';
+
+  // Determine page title based on filter
+  const getPageTitle = () => {
+    if (statusFilter === 'active') return 'Active Ads';
+    if (statusFilter === 'draft') return 'Draft Ads';
+    return 'All Ads';
+  };
 
   return (
     <>
+      {/* Filter indicator */}
+      {statusFilter && (
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold">{getPageTitle()}</h2>
+          <p className="text-sm text-muted-foreground">
+            Showing {filteredAds.length} {statusFilter} ad{filteredAds.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
+
       {/* Quick Stats */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:gap-6">
         <Card className="shadow-sm">
@@ -66,9 +92,9 @@ export function AdsListClient() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{ads.length}</div>
+            <div className="text-2xl font-bold">{filteredAds.length}</div>
             <p className="text-xs text-muted-foreground">
-              All creatives
+              {statusFilter ? `${statusFilter} creatives` : 'All creatives'}
             </p>
           </CardContent>
         </Card>
@@ -88,13 +114,13 @@ export function AdsListClient() {
 
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Impressions</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Draft</CardTitle>
+            <FileEdit className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalImpressions.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{draftAds}</div>
             <p className="text-xs text-muted-foreground">
-              Total views
+              In draft status
             </p>
           </CardContent>
         </Card>
@@ -114,7 +140,7 @@ export function AdsListClient() {
       </div>
 
       {/* Ads Grid or Empty State */}
-      {ads.length === 0 ? (
+      {filteredAds.length === 0 ? (
         <Card className="shadow-sm">
           <CardContent className="flex flex-col items-center justify-center py-12 lg:py-16">
             <div className="rounded-full bg-primary/10 p-4 lg:p-6 mb-4">
@@ -134,7 +160,7 @@ export function AdsListClient() {
         </Card>
       ) : (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {ads.map((ad) => (
+          {filteredAds.map((ad) => (
             <Card key={ad.id} className="shadow-sm hover:shadow-md transition-shadow overflow-hidden">
               {/* Ad Preview Image */}
               {ad.imageUrl && (

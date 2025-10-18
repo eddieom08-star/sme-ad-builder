@@ -10,9 +10,27 @@ import {
   Users,
   BarChart3,
   Settings,
+  ChevronDown,
+  Plus,
+  CheckCircle2,
+  FileEdit,
+  List,
 } from "lucide-react";
+import { useState } from "react";
 
-const navItems = [
+type NavItem = {
+  title: string;
+  href?: string;
+  icon: any;
+  subItems?: {
+    title: string;
+    href: string;
+    icon: any;
+    badge?: string;
+  }[];
+};
+
+const navItems: NavItem[] = [
   {
     title: "Dashboard",
     href: "/dashboard",
@@ -25,8 +43,29 @@ const navItems = [
   },
   {
     title: "Ads",
-    href: "/ads",
     icon: FileText,
+    subItems: [
+      {
+        title: "All Ads",
+        href: "/ads",
+        icon: List,
+      },
+      {
+        title: "Active Ads",
+        href: "/ads?status=active",
+        icon: CheckCircle2,
+      },
+      {
+        title: "Draft Ads",
+        href: "/ads?status=draft",
+        icon: FileEdit,
+      },
+      {
+        title: "Create Ad",
+        href: "/ads/new",
+        icon: Plus,
+      },
+    ],
   },
   {
     title: "Leads",
@@ -47,6 +86,32 @@ const navItems = [
 
 export function DashboardNav() {
   const pathname = usePathname();
+  const [expandedItems, setExpandedItems] = useState<string[]>(["Ads"]);
+
+  const toggleExpanded = (title: string) => {
+    setExpandedItems((prev) =>
+      prev.includes(title)
+        ? prev.filter((item) => item !== title)
+        : [...prev, title]
+    );
+  };
+
+  const isItemActive = (item: NavItem): boolean => {
+    if (item.href && pathname === item.href) return true;
+    if (item.subItems) {
+      return item.subItems.some((subItem) => pathname.startsWith(subItem.href));
+    }
+    return false;
+  };
+
+  const isSubItemActive = (href: string): boolean => {
+    // For query parameter based routes, check exact match
+    if (href.includes("?")) {
+      return pathname + (typeof window !== 'undefined' ? window.location.search : '') === href;
+    }
+    // For regular routes, check if pathname starts with href
+    return pathname === href || pathname.startsWith(href + "/");
+  };
 
   return (
     <aside className="w-64 border-r bg-card">
@@ -59,22 +124,82 @@ export function DashboardNav() {
       <nav className="space-y-1 p-4">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = isItemActive(item);
+          const isExpanded = expandedItems.includes(item.title);
+          const hasSubItems = item.subItems && item.subItems.length > 0;
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            <div key={item.title}>
+              {/* Main nav item */}
+              {hasSubItems ? (
+                <button
+                  onClick={() => toggleExpanded(item.title)}
+                  className={cn(
+                    "w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Icon className="h-5 w-5" />
+                    <span>{item.title}</span>
+                  </div>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      isExpanded && "rotate-180"
+                    )}
+                  />
+                </button>
+              ) : (
+                <Link
+                  href={item.href!}
+                  className={cn(
+                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.title}</span>
+                </Link>
               )}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{item.title}</span>
-            </Link>
+
+              {/* Sub-menu items */}
+              {hasSubItems && isExpanded && (
+                <div className="mt-1 ml-4 space-y-1 border-l-2 border-muted pl-4">
+                  {item.subItems!.map((subItem) => {
+                    const SubIcon = subItem.icon;
+                    const isSubActive = isSubItemActive(subItem.href);
+
+                    return (
+                      <Link
+                        key={subItem.href}
+                        href={subItem.href}
+                        className={cn(
+                          "flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                          isSubActive
+                            ? "bg-primary text-primary-foreground font-medium"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <SubIcon className="h-4 w-4" />
+                          <span>{subItem.title}</span>
+                        </div>
+                        {subItem.badge && (
+                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                            {subItem.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>
