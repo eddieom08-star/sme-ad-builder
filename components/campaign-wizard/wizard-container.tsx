@@ -147,7 +147,6 @@ export function WizardContainer({ children }: WizardContainerProps) {
       toast({
         title: 'Draft saved successfully!',
         description: `"${campaignName}" has been saved as a draft. You can continue editing anytime.`,
-        duration: 3000,
       });
 
       // CRITICAL FIX: Reset wizard state BEFORE redirect
