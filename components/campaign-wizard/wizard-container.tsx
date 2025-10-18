@@ -142,9 +142,14 @@ export function WizardContainer({ children }: WizardContainerProps) {
       localStorage.setItem('campaigns', JSON.stringify(existingCampaigns));
 
       toast({
-        title: 'Draft saved',
-        description: `Campaign "${campaignName}" saved as draft`,
+        title: 'Draft saved successfully!',
+        description: `"${campaignName}" has been saved as a draft. You can continue editing anytime.`,
       });
+
+      // Redirect to campaigns list to show the saved draft
+      setTimeout(() => {
+        router.push('/campaigns');
+      }, 1500); // Give user time to see the success message
     } catch (error) {
       toast({
         title: 'Error',
