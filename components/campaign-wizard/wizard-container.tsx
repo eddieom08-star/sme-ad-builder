@@ -8,6 +8,7 @@ import { AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { useState } from 'react';
+import confetti from 'canvas-confetti';
 
 const WIZARD_STEPS = [
   { id: 1, name: 'Campaign Setup', description: 'Name, objective & platforms' },
@@ -54,6 +55,39 @@ export function WizardContainer({ children }: WizardContainerProps) {
     if (step <= currentStep || completedSteps.includes(step)) {
       setStep(step as 1 | 2 | 3 | 4 | 5);
     }
+  };
+
+  // Confetti celebration for successful campaign launch
+  const celebrateSuccess = () => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval: NodeJS.Timeout = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      // Fire confetti from random positions
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
   };
 
   const handleSaveDraft = async () => {
@@ -321,6 +355,9 @@ export function WizardContainer({ children }: WizardContainerProps) {
       existingAds.push(...createdAds);
       localStorage.setItem('ads', JSON.stringify(existingAds));
 
+      // 🎉 CELEBRATE SUCCESS! Trigger confetti animation
+      celebrateSuccess();
+
       toast({
         title: isEditMode ? 'Campaign updated!' : 'Campaign launched!',
         description: isEditMode
@@ -331,8 +368,10 @@ export function WizardContainer({ children }: WizardContainerProps) {
       // Reset wizard state to allow creating new campaigns
       reset();
 
-      // Redirect to campaign details
-      router.push(`/campaigns/${campaignId}`);
+      // Redirect to campaign details after a short delay to enjoy the confetti
+      setTimeout(() => {
+        router.push(`/campaigns/${campaignId}`);
+      }, 2000);
     } catch (error) {
       toast({
         title: 'Error',
