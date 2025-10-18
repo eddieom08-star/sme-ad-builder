@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 // Types
 export type CampaignObjective = 'awareness' | 'traffic' | 'leads' | 'conversions';
-export type Platform = 'facebook' | 'instagram' | 'google' | 'linkedin';
+export type Platform = 'facebook' | 'instagram' | 'google' | 'linkedin' | 'tiktok';
 export type BudgetType = 'daily' | 'lifetime';
 export type BidStrategy = 'lowest_cost' | 'cost_cap' | 'bid_cap';
 export type AdFormat = 'image' | 'video' | 'carousel' | 'story';
@@ -605,6 +605,7 @@ function getPlatformLimits(platform: Platform) {
     instagram: { headline: 40, primaryText: 2200, description: 30 },
     google: { headline: 30, primaryText: 90, description: 90 },
     linkedin: { headline: 70, primaryText: 150, description: 70 },
+    tiktok: { headline: 100, primaryText: 1000, description: 80 },
   };
   return limits[platform] || limits.facebook;
 }

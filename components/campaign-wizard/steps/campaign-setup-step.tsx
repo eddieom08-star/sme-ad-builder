@@ -22,7 +22,8 @@ import {
   Facebook,
   Instagram,
   Chrome,
-  Linkedin
+  Linkedin,
+  Play
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -81,6 +82,13 @@ const PLATFORMS = [
     description: 'Target professional audiences',
     icon: Linkedin,
     color: 'text-blue-700',
+  },
+  {
+    value: 'tiktok' as Platform,
+    label: 'TikTok',
+    description: 'Reach Gen Z and millennial audiences',
+    icon: Play,
+    color: 'text-[#25F4EE]',
   },
 ];
 

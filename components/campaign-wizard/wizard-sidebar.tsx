@@ -168,18 +168,34 @@ export function WizardSidebar({ className }: { className?: string }) {
         <div className="border-b px-4 py-2 flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-1">
             <Button
-              variant={activePanel === 'both' || activePanel === 'preview' ? 'default' : 'ghost'}
+              variant={activePanel === 'preview' || (activePanel === 'both') ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setActivePanel(activePanel === 'preview' ? 'both' : 'preview')}
+              onClick={() => {
+                if (activePanel === 'preview') {
+                  setActivePanel('both');
+                } else if (activePanel === 'both') {
+                  setActivePanel('chat');
+                } else {
+                  setActivePanel('preview');
+                }
+              }}
               className="h-7"
             >
               <Eye className="h-3.5 w-3.5 mr-1.5" />
               <span className="text-xs">Preview</span>
             </Button>
             <Button
-              variant={activePanel === 'both' || activePanel === 'chat' ? 'default' : 'ghost'}
+              variant={activePanel === 'chat' || (activePanel === 'both') ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setActivePanel(activePanel === 'chat' ? 'both' : 'chat')}
+              onClick={() => {
+                if (activePanel === 'chat') {
+                  setActivePanel('both');
+                } else if (activePanel === 'both') {
+                  setActivePanel('preview');
+                } else {
+                  setActivePanel('chat');
+                }
+              }}
               className="h-7"
             >
               <MessageSquare className="h-3.5 w-3.5 mr-1.5" />

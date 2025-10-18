@@ -47,6 +47,12 @@ const PLATFORM_CONFIG = {
     color: 'from-blue-600 to-blue-700',
     bgColor: 'bg-[#0A66C2]',
   },
+  tiktok: {
+    name: 'TikTok',
+    icon: Play,
+    color: 'from-black via-[#25F4EE] to-[#FE2C55]',
+    bgColor: 'bg-black',
+  },
 } as const;
 
 interface AdPreviewPanelProps {
@@ -128,6 +134,7 @@ export function AdPreviewPanel({ className }: AdPreviewPanelProps) {
               {platform === 'instagram' && <InstagramPreview ad={currentAd} campaignName={campaignName} />}
               {platform === 'google' && <GooglePreview ad={currentAd} campaignName={campaignName} />}
               {platform === 'linkedin' && <LinkedInPreview ad={currentAd} campaignName={campaignName} />}
+              {platform === 'tiktok' && <TikTokPreview ad={currentAd} campaignName={campaignName} />}
             </TabsContent>
           ))}
         </div>
@@ -432,6 +439,125 @@ function LinkedInPreview({ ad, campaignName }: { ad?: AdCreative; campaignName: 
         <span>0 comments</span>
       </div>
     </Card>
+  );
+}
+
+// TikTok For You Page Ad Preview
+function TikTokPreview({ ad, campaignName }: { ad?: AdCreative; campaignName: string }) {
+  if (!ad) {
+    return <EmptyPreview platform="TikTok" />;
+  }
+
+  return (
+    <div className="max-w-sm mx-auto">
+      <Card className="bg-black text-white border-gray-800 shadow-lg overflow-hidden">
+        {/* TikTok Video Container - Vertical Feed */}
+        <div className="relative aspect-[9/16] bg-gradient-to-b from-gray-900 to-black">
+          {/* Media Background */}
+          {ad.media[0] && (
+            <div className="absolute inset-0">
+              {ad.media[0].type === 'image' ? (
+                <img
+                  src={ad.media[0].url}
+                  alt={ad.headline}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-800 to-black">
+                  <Play className="h-20 w-20 text-white/80" />
+                </div>
+              )}
+              {/* Dark overlay for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+            </div>
+          )}
+
+          {/* Top Bar - TikTok UI */}
+          <div className="relative z-10 flex items-center justify-between p-4">
+            <div className="flex gap-4 text-sm">
+              <span className="font-semibold">Following</span>
+              <span className="text-white/60">For You</span>
+            </div>
+            <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 110-12 6 6 0 010 12z" />
+            </svg>
+          </div>
+
+          {/* Right Side Actions - Signature TikTok Layout */}
+          <div className="absolute right-2 bottom-24 z-10 flex flex-col items-center gap-4">
+            {/* Profile */}
+            <div className="relative">
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#25F4EE] to-[#FE2C55] p-0.5">
+                <div className="h-full w-full rounded-full bg-gray-800 flex items-center justify-center text-white font-semibold">
+                  {campaignName.charAt(0).toUpperCase()}
+                </div>
+              </div>
+              {/* Follow button */}
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full bg-[#FE2C55] flex items-center justify-center">
+                <span className="text-white text-xl leading-none pb-0.5">+</span>
+              </div>
+            </div>
+
+            {/* Like */}
+            <div className="flex flex-col items-center gap-1">
+              <Heart className="h-8 w-8" />
+              <span className="text-xs">12.3K</span>
+            </div>
+
+            {/* Comment */}
+            <div className="flex flex-col items-center gap-1">
+              <MessageCircle className="h-8 w-8" />
+              <span className="text-xs">432</span>
+            </div>
+
+            {/* Share */}
+            <div className="flex flex-col items-center gap-1">
+              <Share2 className="h-8 w-8" />
+              <span className="text-xs">Share</span>
+            </div>
+          </div>
+
+          {/* Bottom Content - Caption & CTA */}
+          <div className="absolute bottom-0 left-0 right-16 z-10 p-4 space-y-2">
+            {/* Account Name */}
+            <div className="font-semibold flex items-center gap-2">
+              @{(campaignName || 'yourbusiness').toLowerCase().replace(/\s+/g, '')}
+              <Badge className="bg-white/20 text-white border-0 text-xs px-2">
+                Sponsored
+              </Badge>
+            </div>
+
+            {/* Caption */}
+            <p className="text-sm line-clamp-2">
+              {ad.primaryText || 'Your ad copy will appear here...'}
+            </p>
+
+            {/* Headline (if different from caption) */}
+            {ad.headline && (
+              <p className="text-sm font-semibold">
+                {ad.headline}
+              </p>
+            )}
+
+            {/* Call to Action Button */}
+            <Button
+              className="w-full bg-white text-black hover:bg-gray-200 font-semibold rounded-lg mt-2"
+              size="sm"
+            >
+              {ad.callToAction || 'Learn More'}
+            </Button>
+
+            {/* Sound/Music Indicator */}
+            <div className="flex items-center gap-2 text-xs">
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+              </svg>
+              <span className="truncate">Original sound - {campaignName}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
   );
 }
 
