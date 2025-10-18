@@ -124,22 +124,29 @@ export function WizardSidebar({ className }: { className?: string }) {
         <div
           ref={widthResizerRef}
           className={cn(
-            'absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-40 group flex items-center justify-center',
-            isResizingWidth ? 'bg-primary' : 'bg-border hover:bg-primary/50'
+            'absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 transition-all duration-200',
+            isResizingWidth ? 'bg-primary w-2' : 'bg-border hover:bg-primary/70 hover:w-2'
           )}
           onMouseDown={handleWidthMouseDown}
-          style={{ marginLeft: '-0.5px' }}
+          style={{
+            marginLeft: '-3px', // Position it to overlap the border
+          }}
         >
-          {/* Hover area - wider for easier grabbing */}
-          <div className="absolute inset-y-0 -left-2 -right-2 hover:bg-primary/10" />
+          {/* Wider hover area for easier grabbing */}
+          <div
+            className="absolute inset-y-0 -left-3 -right-3"
+            style={{ pointerEvents: 'auto' }}
+          />
 
-          {/* Visual grip indicator */}
-          <div className={cn(
-            'absolute top-1/2 -translate-y-1/2 w-1 h-12 rounded-full transition-all',
-            isResizingWidth
-              ? 'bg-primary shadow-lg'
-              : 'bg-border group-hover:bg-primary group-hover:h-16'
-          )} />
+          {/* Visual grip indicator - always visible */}
+          <div
+            className={cn(
+              'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-16 rounded-full transition-all duration-200',
+              isResizingWidth
+                ? 'bg-primary-foreground shadow-lg h-20'
+                : 'bg-muted-foreground/40 hover:bg-primary-foreground hover:h-20'
+            )}
+          />
         </div>
       )}
 
