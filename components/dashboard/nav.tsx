@@ -15,8 +15,11 @@ import {
   CheckCircle2,
   FileEdit,
   List,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type NavItem = {
   title: string;
@@ -87,6 +90,7 @@ const navItems: NavItem[] = [
 export function DashboardNav() {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<string[]>(["Ads"]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) =>
@@ -94,6 +98,10 @@ export function DashboardNav() {
         ? prev.filter((item) => item !== title)
         : [...prev, title]
     );
+  };
+
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => !prev);
   };
 
   const isItemActive = (item: NavItem): boolean => {
@@ -114,12 +122,35 @@ export function DashboardNav() {
   };
 
   return (
-    <aside className="w-64 border-r bg-card">
-      <div className="flex h-16 items-center border-b px-6">
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <Target className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">AdBuilder</span>
-        </Link>
+    <aside className={cn(
+      "border-r bg-card transition-all duration-300",
+      isCollapsed ? "w-16" : "w-64"
+    )}>
+      <div className="flex h-16 items-center justify-between border-b px-4">
+        {!isCollapsed && (
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <Target className="h-6 w-6 text-primary" />
+            <span className="text-xl font-bold">AdBuilder</span>
+          </Link>
+        )}
+        {isCollapsed && (
+          <Link href="/dashboard" className="flex items-center justify-center w-full">
+            <Target className="h-6 w-6 text-primary" />
+          </Link>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="h-8 w-8 shrink-0"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <PanelLeftOpen className="h-4 w-4" />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" />
+          )}
+        </Button>
       </div>
       <nav className="space-y-1 p-4">
         {navItems.map((item) => {
@@ -133,42 +164,48 @@ export function DashboardNav() {
               {/* Main nav item */}
               {hasSubItems ? (
                 <button
-                  onClick={() => toggleExpanded(item.title)}
+                  onClick={() => !isCollapsed && toggleExpanded(item.title)}
                   className={cn(
-                    "w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "w-full flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isCollapsed ? "justify-center" : "justify-between",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
+                  title={isCollapsed ? item.title : undefined}
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className={cn("flex items-center", isCollapsed ? "" : "space-x-3")}>
                     <Icon className="h-5 w-5" />
-                    <span>{item.title}</span>
+                    {!isCollapsed && <span>{item.title}</span>}
                   </div>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 transition-transform",
-                      isExpanded && "rotate-180"
-                    )}
-                  />
+                  {!isCollapsed && (
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform",
+                        isExpanded && "rotate-180"
+                      )}
+                    />
+                  )}
                 </button>
               ) : (
                 <Link
                   href={item.href!}
                   className={cn(
-                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isCollapsed ? "justify-center" : "space-x-3",
                     isActive
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
+                  title={isCollapsed ? item.title : undefined}
                 >
                   <Icon className="h-5 w-5" />
-                  <span>{item.title}</span>
+                  {!isCollapsed && <span>{item.title}</span>}
                 </Link>
               )}
 
               {/* Sub-menu items */}
-              {hasSubItems && isExpanded && (
+              {hasSubItems && isExpanded && !isCollapsed && (
                 <div className="mt-1 ml-4 space-y-1 border-l-2 border-muted pl-4">
                   {item.subItems!.map((subItem) => {
                     const SubIcon = subItem.icon;
