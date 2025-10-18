@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Image, Video, Sparkles, Plus, Trash2, Upload, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const AD_FORMATS = [
   { value: 'image' as AdFormat, label: 'Single Image', icon: Image, description: 'One image ad' },
@@ -50,6 +50,25 @@ export function CreativeStep() {
   const [currentAdId, setCurrentAdId] = useState<string | null>(
     ads.length > 0 ? ads[0].id! : null
   );
+
+  // Sync currentAdId when component mounts or ads change
+  // This ensures the selected ad persists when navigating between steps
+  useEffect(() => {
+    if (ads.length > 0 && !currentAdId) {
+      // If we have ads but no selected ad, select the first one
+      setCurrentAdId(ads[0].id!);
+    } else if (ads.length > 0 && currentAdId) {
+      // Check if the currently selected ad still exists
+      const adExists = ads.some(ad => ad.id === currentAdId);
+      if (!adExists) {
+        // If selected ad was deleted, select the first available ad
+        setCurrentAdId(ads[0].id!);
+      }
+    } else if (ads.length === 0) {
+      // No ads, clear selection
+      setCurrentAdId(null);
+    }
+  }, [ads, currentAdId]);
 
   const currentAd = ads.find(ad => ad.id === currentAdId);
   const currentPlatform = currentAd?.platform || platforms[0] || 'facebook';
