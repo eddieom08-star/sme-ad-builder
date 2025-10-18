@@ -32,7 +32,8 @@ import {
   Circle,
   Facebook,
   Instagram,
-  Linkedin
+  Linkedin,
+  Play
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -49,6 +50,7 @@ const CTA_OPTIONS = {
   instagram: ['Learn More', 'Shop Now', 'Sign Up', 'Contact Us', 'Book Now', 'View More'],
   google: ['Learn More', 'Get Started', 'Sign Up', 'Buy Now', 'Contact Sales', 'Request Quote'],
   linkedin: ['Learn More', 'Sign Up', 'Download', 'Register', 'Subscribe', 'Join Now', 'Contact Us'],
+  tiktok: ['Learn More', 'Shop Now', 'Sign Up', 'Download', 'Watch Now', 'Visit Website', 'Contact Us'],
 };
 
 const PLATFORM_LIMITS = {
@@ -56,6 +58,7 @@ const PLATFORM_LIMITS = {
   instagram: { headline: 40, primaryText: 2200, description: 30 },
   google: { headline: 30, primaryText: 90, description: 90 },
   linkedin: { headline: 70, primaryText: 150, description: 70 },
+  tiktok: { headline: 100, primaryText: 1000, description: 80 },
 };
 
 const PLATFORM_ICONS: Record<Platform, any> = {
@@ -63,6 +66,7 @@ const PLATFORM_ICONS: Record<Platform, any> = {
   instagram: Instagram,
   google: () => <span className="font-bold text-lg">G</span>,
   linkedin: Linkedin,
+  tiktok: Play,
 };
 
 const PLATFORM_COLORS: Record<Platform, string> = {
@@ -70,6 +74,7 @@ const PLATFORM_COLORS: Record<Platform, string> = {
   instagram: 'from-pink-500 via-purple-500 to-orange-500',
   google: 'from-blue-500 via-red-500 to-yellow-500',
   linkedin: 'from-blue-600 to-blue-700',
+  tiktok: 'from-black via-[#25F4EE] to-[#FE2C55]',
 };
 
 export function CreativeStep() {
