@@ -59,39 +59,45 @@ export function WizardContainer({ children }: WizardContainerProps) {
   const handleSaveDraft = async () => {
     setIsSaving(true);
     try {
-      // Prepare campaign data
-      const campaignData = {
-        name: campaignName,
-        description: '',
-        platforms: platforms.map(p => p as string),
-        budget: budgetAmount.toFixed(2),
-        budgetType,
-        startDate,
-        endDate,
-        targeting: {
-          ageMin: targeting.ageMin,
-          ageMax: targeting.ageMax,
-          genders: targeting.genders,
-          locations: targeting.locations.map(l => l.name),
-          interests: targeting.interests,
-          behaviors: targeting.behaviors,
-        },
-        status: 'draft' as const,
-      };
+      // Use existing savedCampaignId if available, otherwise get new one from API
+      let campaignId = savedCampaignId;
 
-      // Call API to save campaign
-      const response = await fetch('/api/campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(campaignData),
-      });
+      if (!campaignId) {
+        // Only call API if we don't have a campaignId yet
+        const campaignData = {
+          name: campaignName,
+          description: '',
+          platforms: platforms.map(p => p as string),
+          budget: budgetAmount.toFixed(2),
+          budgetType,
+          startDate,
+          endDate,
+          targeting: {
+            ageMin: targeting.ageMin,
+            ageMax: targeting.ageMax,
+            genders: targeting.genders,
+            locations: targeting.locations.map(l => l.name),
+            interests: targeting.interests,
+            behaviors: targeting.behaviors,
+          },
+          status: 'draft' as const,
+        };
 
-      if (!response.ok) {
-        throw new Error('Failed to save campaign');
+        const response = await fetch('/api/campaigns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(campaignData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save campaign');
+        }
+
+        const result = await response.json();
+        campaignId = result.campaignId;
+        setSavedCampaignId(campaignId);
       }
 
-      const { campaignId } = await response.json();
-      setSavedCampaignId(campaignId);
       updateLastSaved();
 
       // Save draft to localStorage for display and editing
