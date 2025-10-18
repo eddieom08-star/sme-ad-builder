@@ -97,6 +97,11 @@ export function WizardContainer({ children }: WizardContainerProps) {
         campaignId = result.campaignId;
       }
 
+      // Ensure we have a campaignId at this point
+      if (!campaignId) {
+        throw new Error('No campaign ID available');
+      }
+
       // Save draft to localStorage for display and editing
       const fullCampaignData = {
         id: campaignId.toString(),
