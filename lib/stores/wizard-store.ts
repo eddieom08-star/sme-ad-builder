@@ -388,15 +388,54 @@ export const useWizardStore = create<WizardState>()(
           }
 
           case 5: {
-            // Final validation - check all previous steps
-            const step1Valid = get().validateStep(1);
-            const step2Valid = get().validateStep(2);
-            const step3Valid = get().validateStep(3);
-            const step4Valid = get().validateStep(4);
+            // Final validation - collect errors from all previous steps without recursive calls
+            // This prevents duplicate error messages
 
-            if (!step1Valid || !step2Valid || !step3Valid || !step4Valid) {
-              errors.overall = ['Please complete all previous steps'];
+            // Validate step 1 inline
+            if (!state.campaignName.trim()) {
+              errors.campaignName = ['Campaign name is required'];
             }
+            if (!state.objective) {
+              errors.objective = ['Campaign objective is required'];
+            }
+            if (state.platforms.length === 0) {
+              errors.platforms = ['Select at least one platform'];
+            }
+
+            // Validate step 2 inline
+            if (state.targeting.locations.length === 0) {
+              errors.locations = ['Add at least one location'];
+            }
+
+            // Validate step 3 inline
+            const minBudget = state.budgetType === 'daily' ? 5 : 35;
+            if (state.budgetAmount < minBudget) {
+              errors.budgetAmount = [`Minimum ${state.budgetType} budget is $${minBudget}`];
+            }
+
+            // Validate step 4 inline
+            if (state.ads.length === 0) {
+              errors.ads = ['Create at least one ad'];
+            } else {
+              state.ads.forEach((ad, index) => {
+                if (!ad.headline.trim()) {
+                  errors[`ad_${index}_headline`] = ['Headline is required'];
+                }
+                if (!ad.primaryText.trim()) {
+                  errors[`ad_${index}_primaryText`] = ['Primary text is required'];
+                }
+                if (!ad.callToAction) {
+                  errors[`ad_${index}_cta`] = ['Call-to-action is required'];
+                }
+                if (ad.media.length === 0) {
+                  errors[`ad_${index}_media`] = ['Upload at least one image or video'];
+                }
+                if (!ad.destinationUrl || !isValidUrl(ad.destinationUrl)) {
+                  errors[`ad_${index}_url`] = ['Valid destination URL is required'];
+                }
+              });
+            }
+
             break;
           }
         }
