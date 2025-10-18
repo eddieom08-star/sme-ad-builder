@@ -497,7 +497,35 @@ export const useWizardStore = create<WizardState>()(
             }));
           }
 
-          // 3. Populate wizard store with campaign data
+          // 3. Determine which step to return user to
+          // Priority: saved currentStep > next incomplete step > first step
+          let resumeStep: 1 | 2 | 3 | 4 | 5 = 1;
+          let completedSteps: number[] = [];
+
+          if (campaignAds.length > 0) {
+            // All steps completed, go to review
+            completedSteps = [1, 2, 3, 4];
+            resumeStep = 5;
+          } else if (campaign.budget && campaign.startDate && campaign.endDate) {
+            // Steps 1-3 completed, go to creative
+            completedSteps = [1, 2, 3];
+            resumeStep = 4;
+          } else if (campaign.targeting?.locations?.length > 0) {
+            // Steps 1-2 completed, go to budget
+            completedSteps = [1, 2];
+            resumeStep = 3;
+          } else if (campaign.platforms?.length > 0) {
+            // Step 1 completed, go to targeting
+            completedSteps = [1];
+            resumeStep = 2;
+          }
+
+          // If campaign has a saved currentStep, use that instead
+          if (campaign.currentStep && campaign.currentStep >= 1 && campaign.currentStep <= 5) {
+            resumeStep = campaign.currentStep as 1 | 2 | 3 | 4 | 5;
+          }
+
+          // 4. Populate wizard store with campaign data
           set({
             campaignName: campaign.name || '',
             campaignDescription: campaign.description || '',
@@ -527,8 +555,8 @@ export const useWizardStore = create<WizardState>()(
             },
             ads: campaignAds,
             savedCampaignId: parseInt(campaign.id),
-            completedSteps: campaignAds.length > 0 ? [1, 2, 3, 4] : [1, 2, 3],
-            currentStep: 1,
+            completedSteps,
+            currentStep: resumeStep,
           });
         } catch (error) {
           console.error('Error loading campaign:', error);

@@ -103,6 +103,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
       }
 
       // Save draft to localStorage for display and editing
+      // IMPORTANT: Save currentStep and completedSteps so user can resume where they left off
       const fullCampaignData = {
         id: campaignId.toString(),
         name: campaignName,
@@ -118,6 +119,8 @@ export function WizardContainer({ children }: WizardContainerProps) {
         bidStrategy,
         bidCap,
         createdAt: new Date().toISOString(),
+        currentStep, // Save where user was when they saved
+        completedSteps, // Save progress through wizard
         targeting: {
           ageMin: targeting.ageMin,
           ageMax: targeting.ageMax,
