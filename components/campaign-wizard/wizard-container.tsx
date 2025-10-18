@@ -152,6 +152,14 @@ export function WizardContainer({ children }: WizardContainerProps) {
       // 3. Stale wizard data
       reset();
 
+      // FORCE CLEAR: Remove Zustand persist storage to prevent async race condition
+      // where persist middleware might save old state after reset()
+      try {
+        localStorage.removeItem('campaign-wizard-storage');
+      } catch (error) {
+        console.error('Failed to clear wizard storage:', error);
+      }
+
       // Redirect to campaigns list after a short delay for toast visibility
       setTimeout(() => {
         router.push('/campaigns');
