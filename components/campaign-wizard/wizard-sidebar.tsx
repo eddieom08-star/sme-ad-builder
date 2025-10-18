@@ -4,13 +4,14 @@ import { useState, useRef, useEffect } from 'react';
 import { AdPreviewPanel } from './ad-preview-panel';
 import { AdAgentChat } from './ad-agent-chat';
 import { Button } from '@/components/ui/button';
-import { GripHorizontal, Maximize2, Minimize2, Eye, MessageSquare } from 'lucide-react';
+import { GripHorizontal, Maximize2, Minimize2, Eye, MessageSquare, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function WizardSidebar({ className }: { className?: string }) {
   const [previewHeight, setPreviewHeight] = useState(50); // Percentage
   const [isResizing, setIsResizing] = useState(false);
   const [activePanel, setActivePanel] = useState<'preview' | 'chat' | 'both'>('both');
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const resizerRef = useRef<HTMLDivElement>(null);
 
@@ -62,70 +63,97 @@ export function WizardSidebar({ className }: { className?: string }) {
   };
 
   return (
-    <div
-      ref={sidebarRef}
-      className={cn(
-        'flex flex-col h-full border-l bg-background',
-        isResizing && 'select-none',
-        className
+    <>
+      {/* Floating Collapse/Expand Button */}
+      {isCollapsed && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="fixed right-4 top-20 z-50 h-10 w-10 rounded-full shadow-lg border-2"
+          onClick={() => setIsCollapsed(false)}
+          title="Show sidebar"
+        >
+          <PanelRightOpen className="h-5 w-5" />
+        </Button>
       )}
-    >
-      {/* Header with Panel Toggles */}
-      <div className="border-b px-4 py-2 flex items-center justify-between bg-muted/30">
-        <div className="flex items-center gap-1">
-          <Button
-            variant={activePanel === 'both' || activePanel === 'preview' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActivePanel(activePanel === 'preview' ? 'both' : 'preview')}
-            className="h-7"
-          >
-            <Eye className="h-3.5 w-3.5 mr-1.5" />
-            <span className="text-xs">Preview</span>
-          </Button>
-          <Button
-            variant={activePanel === 'both' || activePanel === 'chat' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActivePanel(activePanel === 'chat' ? 'both' : 'chat')}
-            className="h-7"
-          >
-            <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
-            <span className="text-xs">AI Agent</span>
-          </Button>
-        </div>
 
-        {/* Preset Buttons */}
-        {activePanel === 'both' && (
+      <div
+        ref={sidebarRef}
+        className={cn(
+          'flex flex-col h-full border-l bg-background transition-all duration-300',
+          isResizing && 'select-none',
+          isCollapsed && 'translate-x-full',
+          className
+        )}
+      >
+        {/* Header with Panel Toggles */}
+        <div className="border-b px-4 py-2 flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setPreset('preview')}
-              title="More preview"
+              variant={activePanel === 'both' || activePanel === 'preview' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActivePanel(activePanel === 'preview' ? 'both' : 'preview')}
+              className="h-7"
             >
-              <Maximize2 className="h-3 w-3" />
+              <Eye className="h-3.5 w-3.5 mr-1.5" />
+              <span className="text-xs">Preview</span>
             </Button>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setPreset('even')}
-              title="Split evenly"
+              variant={activePanel === 'both' || activePanel === 'chat' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActivePanel(activePanel === 'chat' ? 'both' : 'chat')}
+              className="h-7"
             >
-              <GripHorizontal className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setPreset('chat')}
-              title="More chat"
-            >
-              <Minimize2 className="h-3 w-3" />
+              <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+              <span className="text-xs">AI Agent</span>
             </Button>
           </div>
-        )}
-      </div>
+
+          {/* Preset & Collapse Buttons */}
+          <div className="flex items-center gap-1">
+            {activePanel === 'both' && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setPreset('preview')}
+                  title="More preview"
+                >
+                  <Maximize2 className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setPreset('even')}
+                  title="Split evenly"
+                >
+                  <GripHorizontal className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setPreset('chat')}
+                  title="More chat"
+                >
+                  <Minimize2 className="h-3 w-3" />
+                </Button>
+              </>
+            )}
+            <div className="w-px h-4 bg-border mx-1" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => setIsCollapsed(true)}
+              title="Hide sidebar"
+            >
+              <PanelRightClose className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
 
       {/* Content */}
       <div className="flex-1 overflow-hidden relative">
@@ -180,6 +208,7 @@ export function WizardSidebar({ className }: { className?: string }) {
           </>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
