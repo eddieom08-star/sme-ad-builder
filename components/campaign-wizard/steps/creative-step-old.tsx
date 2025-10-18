@@ -35,6 +35,7 @@ const PLATFORM_LIMITS = {
   instagram: { headline: 40, primaryText: 2200, description: 30 },
   google: { headline: 30, primaryText: 90, description: 90 },
   linkedin: { headline: 70, primaryText: 150, description: 70 },
+  tiktok: { headline: 100, primaryText: 1000, description: 80 },
 };
 
 export function CreativeStep() {
