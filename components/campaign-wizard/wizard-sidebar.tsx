@@ -170,12 +170,16 @@ export function WizardSidebar({ className }: { className?: string }) {
               variant={activePanel === 'preview' || (activePanel === 'both') ? 'default' : 'ghost'}
               size="sm"
               onClick={() => {
+                // Toggle Preview: turn it on/off independently
                 if (activePanel === 'preview') {
+                  // Preview is only thing shown, turn it off → default to both
                   setActivePanel('both');
                 } else if (activePanel === 'both') {
+                  // Both shown, turn off preview → show only chat
                   setActivePanel('chat');
                 } else {
-                  setActivePanel('preview');
+                  // Chat is only thing shown, turn on preview → show both
+                  setActivePanel('both');
                 }
               }}
               className="h-7"
@@ -187,12 +191,16 @@ export function WizardSidebar({ className }: { className?: string }) {
               variant={activePanel === 'chat' || (activePanel === 'both') ? 'default' : 'ghost'}
               size="sm"
               onClick={() => {
+                // Toggle AI Agent: turn it on/off independently
                 if (activePanel === 'chat') {
+                  // Chat is only thing shown, turn it off → default to both
                   setActivePanel('both');
                 } else if (activePanel === 'both') {
+                  // Both shown, turn off chat → show only preview
                   setActivePanel('preview');
                 } else {
-                  setActivePanel('chat');
+                  // Preview is only thing shown, turn on chat → show both
+                  setActivePanel('both');
                 }
               }}
               className="h-7"
