@@ -110,7 +110,7 @@ export function AdPreviewPanel({ className }: AdPreviewPanelProps) {
         onValueChange={(value) => setSelectedPlatform(value as Platform)}
         className="flex-1 flex flex-col"
       >
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
+        <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto overflow-x-auto flex-nowrap">
           {platforms.map((platform) => {
             const config = PLATFORM_CONFIG[platform];
             const Icon = config.icon;
@@ -118,10 +118,10 @@ export function AdPreviewPanel({ className }: AdPreviewPanelProps) {
               <TabsTrigger
                 key={platform}
                 value={platform}
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-muted/50 px-4 py-3"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-muted/50 px-4 py-3 flex-shrink-0"
               >
                 <Icon className="h-4 w-4 mr-2" />
-                <span className="text-xs font-medium">{config.name}</span>
+                <span className="text-xs font-medium whitespace-nowrap">{config.name}</span>
               </TabsTrigger>
             );
           })}
