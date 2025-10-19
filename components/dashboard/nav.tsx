@@ -142,14 +142,15 @@ export function DashboardNav() {
           onClick={toggleSidebar}
           className={cn(
             "shrink-0 transition-all border-border/40 hover:border-primary hover:bg-primary/10",
+            "[&_svg]:text-white [&_svg]:!text-white",
             isCollapsed ? "h-9 w-9" : "h-8 w-8"
           )}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4 text-white" />
+            <PanelLeftOpen className="h-4 w-4" />
           ) : (
-            <PanelLeftClose className="h-4 w-4 text-white" />
+            <PanelLeftClose className="h-4 w-4" />
           )}
         </Button>
       </div>
