@@ -119,41 +119,6 @@ export function WizardSidebar({ className }: { className?: string }) {
         </Button>
       )}
 
-      {/* Width Resizer - Prominent Draggable Divider */}
-      {!isCollapsed && (
-        <div
-          ref={widthResizerRef}
-          className={cn(
-            'absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-all duration-200 group',
-            isResizingWidth ? 'bg-primary/80' : 'bg-border/60 hover:bg-primary/60'
-          )}
-          onMouseDown={handleWidthMouseDown}
-          style={{
-            marginLeft: '-4px', // Position it to overlap the border
-          }}
-        >
-          {/* Wider hover area for easier grabbing - now visible with background */}
-          <div
-            className={cn(
-              'absolute inset-y-0 -left-4 -right-4 transition-colors',
-              isResizingWidth
-                ? 'bg-primary/10'
-                : 'bg-transparent group-hover:bg-primary/5'
-            )}
-          />
-
-          {/* Visual grip indicator - always visible and prominent */}
-          <div
-            className={cn(
-              'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-20 rounded-full transition-all duration-200 shadow-sm',
-              isResizingWidth
-                ? 'bg-primary shadow-lg h-24 w-2'
-                : 'bg-muted-foreground/60 group-hover:bg-primary group-hover:h-24 group-hover:w-2'
-            )}
-          />
-        </div>
-      )}
-
       <div
         ref={sidebarRef}
         className={cn(
@@ -164,6 +129,40 @@ export function WizardSidebar({ className }: { className?: string }) {
         )}
         style={{ width: isCollapsed ? 0 : `${sidebarWidth}px`, minWidth: isCollapsed ? 0 : `${sidebarWidth}px` }}
       >
+        {/* Width Resizer - Prominent Draggable Divider - MUST BE INSIDE SIDEBAR */}
+        {!isCollapsed && (
+          <div
+            ref={widthResizerRef}
+            className={cn(
+              'absolute left-0 top-0 bottom-0 w-2 cursor-col-resize z-50 transition-all duration-200 group',
+              isResizingWidth ? 'bg-primary/80' : 'bg-border/60 hover:bg-primary/60'
+            )}
+            onMouseDown={handleWidthMouseDown}
+            style={{
+              marginLeft: '-4px', // Position it to overlap the border
+            }}
+          >
+            {/* Wider hover area for easier grabbing - now visible with background */}
+            <div
+              className={cn(
+                'absolute inset-y-0 -left-4 -right-4 transition-colors',
+                isResizingWidth
+                  ? 'bg-primary/10'
+                  : 'bg-transparent group-hover:bg-primary/5'
+              )}
+            />
+
+            {/* Visual grip indicator - always visible and prominent */}
+            <div
+              className={cn(
+                'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-20 rounded-full transition-all duration-200 shadow-sm',
+                isResizingWidth
+                  ? 'bg-primary shadow-lg h-24 w-2'
+                  : 'bg-muted-foreground/60 group-hover:bg-primary group-hover:h-24 group-hover:w-2'
+              )}
+            />
+          </div>
+        )}
         {/* Header with Panel Toggles */}
         <div className="border-b px-4 py-2 flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-1">
