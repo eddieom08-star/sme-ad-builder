@@ -38,24 +38,31 @@ export function WizardProgress({
                 onClick={() => isClickable && onStepClick(step.id)}
                 disabled={!isClickable}
                 className={cn(
-                  'group flex w-full flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4',
-                  isCompleted && 'border-primary',
-                  isCurrent && !isCompleted && 'border-primary',
+                  'group flex w-full flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 transition-all duration-200 rounded-lg',
+                  // Current step - highly visible with background and shadow
+                  isCurrent && 'border-primary bg-primary/10 md:bg-primary/5 shadow-md md:shadow-sm scale-105 md:scale-100',
+                  // Completed step - primary border
+                  isCompleted && !isCurrent && 'border-primary',
+                  // Inactive step - muted
                   !isCompleted && !isCurrent && 'border-muted',
-                  isClickable && 'hover:border-primary/70 cursor-pointer',
+                  // Hover states
+                  isClickable && 'hover:border-primary/70 cursor-pointer hover:bg-primary/5',
                   !isClickable && 'cursor-not-allowed opacity-60'
                 )}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors',
-                      isCompleted && 'border-primary bg-primary text-primary-foreground',
-                      isCurrent && !isCompleted && 'border-primary bg-background text-primary',
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all duration-200',
+                      // Current step - filled with primary color and ring
+                      isCurrent && 'border-primary bg-primary text-primary-foreground ring-4 ring-primary/20 shadow-lg',
+                      // Completed step
+                      isCompleted && !isCurrent && 'border-primary bg-primary text-primary-foreground',
+                      // Inactive step
                       !isCompleted && !isCurrent && 'border-muted bg-background text-muted-foreground'
                     )}
                   >
-                    {isCompleted ? (
+                    {isCompleted && !isCurrent ? (
                       <Check className="h-5 w-5" />
                     ) : (
                       <span>{step.id}</span>
@@ -64,15 +71,24 @@ export function WizardProgress({
                   <div className="flex flex-col items-start text-left">
                     <span
                       className={cn(
-                        'text-sm font-semibold',
-                        isCurrent && 'text-primary',
-                        isCompleted && 'text-foreground',
-                        !isCompleted && !isCurrent && 'text-muted-foreground'
+                        'text-sm transition-all duration-200',
+                        // Current step - larger, bolder, primary color
+                        isCurrent && 'text-primary font-bold text-base',
+                        // Completed step
+                        isCompleted && !isCurrent && 'text-foreground font-semibold',
+                        // Inactive step
+                        !isCompleted && !isCurrent && 'text-muted-foreground font-semibold'
                       )}
                     >
                       {step.name}
                     </span>
-                    <span className="text-xs text-muted-foreground hidden sm:block">
+                    <span
+                      className={cn(
+                        'text-xs transition-all duration-200 hidden sm:block',
+                        isCurrent && 'text-primary/80 font-medium',
+                        !isCurrent && 'text-muted-foreground'
+                      )}
+                    >
                       {step.description}
                     </span>
                   </div>

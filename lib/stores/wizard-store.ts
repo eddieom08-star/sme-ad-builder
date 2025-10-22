@@ -355,6 +355,18 @@ export const useWizardStore = create<WizardState>()(
               errors.ads = ['Create at least one ad'];
             }
 
+            // Check that all selected platforms have at least one ad
+            const platformsWithAds = new Set(state.ads.map(ad => ad.platform));
+            const platformsMissingAds = state.platforms.filter(
+              platform => !platformsWithAds.has(platform)
+            );
+
+            if (platformsMissingAds.length > 0) {
+              errors.platforms_missing_ads = [
+                `Please create at least one ad for: ${platformsMissingAds.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')}`
+              ];
+            }
+
             state.ads.forEach((ad, index) => {
               if (!ad.headline.trim()) {
                 errors[`ad_${index}_headline`] = ['Headline is required'];
@@ -417,6 +429,18 @@ export const useWizardStore = create<WizardState>()(
             if (state.ads.length === 0) {
               errors.ads = ['Create at least one ad'];
             } else {
+              // Check that all selected platforms have at least one ad
+              const platformsWithAds = new Set(state.ads.map(ad => ad.platform));
+              const platformsMissingAds = state.platforms.filter(
+                platform => !platformsWithAds.has(platform)
+              );
+
+              if (platformsMissingAds.length > 0) {
+                errors.platforms_missing_ads = [
+                  `Please create at least one ad for: ${platformsMissingAds.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')}`
+                ];
+              }
+
               state.ads.forEach((ad, index) => {
                 if (!ad.headline.trim()) {
                   errors[`ad_${index}_headline`] = ['Headline is required'];
