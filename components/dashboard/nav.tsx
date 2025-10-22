@@ -141,18 +141,19 @@ export function DashboardNav() {
           size="icon"
           onClick={toggleSidebar}
           className={cn(
-            "shrink-0 transition-all",
-            "bg-primary/20 border-2 border-primary/50",
-            "hover:bg-primary/30 hover:border-primary",
-            "[&_svg]:text-white [&_svg]:!text-white",
-            isCollapsed ? "h-9 w-9" : "h-8 w-8"
+            "shrink-0 transition-all shadow-lg",
+            "bg-primary border-2 border-primary",
+            "hover:bg-primary/90 hover:border-primary hover:shadow-xl",
+            "hover:scale-110",
+            "text-primary-foreground",
+            isCollapsed ? "h-10 w-10" : "h-9 w-9"
           )}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4" />
+            <PanelLeftOpen className="h-5 w-5 text-primary-foreground" />
           ) : (
-            <PanelLeftClose className="h-4 w-4" />
+            <PanelLeftClose className="h-5 w-5 text-primary-foreground" />
           )}
         </Button>
       </div>
