@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Platform and objective enums
-export const platformSchema = z.enum(['facebook', 'instagram', 'google', 'linkedin']);
+export const platformSchema = z.enum(['facebook', 'instagram', 'google', 'linkedin', 'tiktok']);
 export const objectiveSchema = z.enum(['awareness', 'traffic', 'leads', 'conversions']);
 export const budgetTypeSchema = z.enum(['daily', 'lifetime']);
 export const bidStrategySchema = z.enum(['lowest_cost', 'cost_cap', 'bid_cap']);
