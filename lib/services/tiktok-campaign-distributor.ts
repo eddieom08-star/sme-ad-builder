@@ -143,7 +143,8 @@ export class TikTokCampaignDistributor {
       errors.push('Creative content is required');
     } else {
       // TikTok requires video or image
-      if (!campaignData.creative.videoUrl && !campaignData.creative.imageUrl) {
+      const hasMedia = campaignData.creative.media && campaignData.creative.media.length > 0;
+      if (!hasMedia) {
         errors.push('Either video or image is required for TikTok ads');
       }
 
@@ -158,27 +159,25 @@ export class TikTokCampaignDistributor {
       }
 
       // Landing page URL required
-      if (!campaignData.creative.linkUrl) {
+      if (!campaignData.creative.destinationUrl) {
         errors.push('Landing page URL is required');
       } else {
         try {
-          new URL(campaignData.creative.linkUrl);
+          new URL(campaignData.creative.destinationUrl);
         } catch {
           errors.push('Invalid landing page URL format');
         }
       }
 
-      // Video requirements (if video is provided)
-      if (campaignData.creative.videoUrl) {
+      // Video and image requirements validation
+      const primaryMedia = campaignData.creative.media?.[0];
+      if (primaryMedia?.type === 'video') {
         // TikTok video requirements:
         // - Duration: 5-60 seconds
         // - File size: 500KB - 500MB
         // - Format: MP4, MOV, MPEG, AVI, FLV, 3GP
         console.log('[TikTokCampaignDistributor] Ensure video meets TikTok requirements: 5-60s, 500KB-500MB, MP4/MOV/MPEG');
-      }
-
-      // Image requirements (if image is provided)
-      if (campaignData.creative.imageUrl) {
+      } else if (primaryMedia?.type === 'image') {
         // TikTok image requirements:
         // - Format: JPG, PNG
         // - Size: Max 50MB
@@ -252,13 +251,16 @@ export class TikTokCampaignDistributor {
     specifications: string;
   } {
     const creative = campaignData.creative;
+    const primaryMedia = creative.media?.[0];
+    const isVideo = primaryMedia?.type === 'video';
+    const isImage = primaryMedia?.type === 'image';
 
     return {
       feedPreview: `
 ┌─────────────────────┐
 │ [TikTok Logo]       │
 │                     │
-│  ${creative.videoUrl ? '[Video Player]' : '[Image Display]'}  │
+│  ${isVideo ? '[Video Player]' : '[Image Display]'}  │
 │                     │
 │  ❤️ 👍 💬 ↗️         │
 │                     │
@@ -268,12 +270,11 @@ export class TikTokCampaignDistributor {
 └─────────────────────┘
       `.trim(),
       specifications: `
-Video: ${creative.videoUrl ? 'Yes' : 'No'}
-Image: ${creative.imageUrl ? 'Yes' : 'No'}
+Video: ${isVideo ? 'Yes' : 'No'}
+Image: ${isImage ? 'Yes' : 'No'}
 Ad Text: ${creative.description || creative.headline || 'N/A'} (${(creative.description || creative.headline || '').length}/100 chars)
 CTA: ${creative.callToAction || 'Learn More'}
-Landing URL: ${creative.linkUrl || 'N/A'}
-Display Name: ${creative.displayUrl || 'Your Brand'}
+Landing URL: ${creative.destinationUrl || 'N/A'}
 
 Recommended:
 - Video: 9:16 aspect ratio, 5-60 seconds
@@ -291,7 +292,8 @@ Recommended:
     const recommendations: string[] = [];
 
     // Video recommendations
-    if (!campaignData.creative.videoUrl) {
+    const primaryMedia = campaignData.creative.media?.[0];
+    if (!primaryMedia || primaryMedia.type !== 'video') {
       recommendations.push('💡 TikTok performs best with video content. Consider adding a video for better engagement.');
     }
 

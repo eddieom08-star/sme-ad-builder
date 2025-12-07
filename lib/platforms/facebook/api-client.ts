@@ -134,7 +134,7 @@ export class FacebookApiClient {
     // Convert budget to cents (Facebook uses cents)
     const budgetInCents = Math.round(campaignData.budget.amount * 100);
 
-    const body = {
+    const body: Record<string, any> = {
       name: `${campaignData.name} - Ad Set`,
       campaign_id: campaignId,
       targeting,

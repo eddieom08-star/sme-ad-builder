@@ -294,7 +294,7 @@ export class GoogleAdsApiClient {
           adGroup: adGroup.resourceName,
           status: 'ENABLED',
           ad: {
-            finalUrls: creative.linkUrl ? [creative.linkUrl] : [],
+            finalUrls: creative.destinationUrl ? [creative.destinationUrl] : [],
             responsiveSearchAd: {
               headlines: [
                 { text: creative.headline },
@@ -305,8 +305,8 @@ export class GoogleAdsApiClient {
                 { text: creative.description },
                 { text: `${creative.description.substring(0, 90)}` },
               ],
-              path1: creative.displayUrl?.split('/')[0] || '',
-              path2: creative.displayUrl?.split('/')[1] || '',
+              path1: '',
+              path2: '',
             },
           },
         },
@@ -314,13 +314,14 @@ export class GoogleAdsApiClient {
     }
 
     // Create Responsive Display Ad (if image is provided)
-    if (creative.imageUrl) {
+    const primaryImage = creative.media?.[0];
+    if (primaryImage && primaryImage.type === 'image') {
       operations.push({
         create: {
           adGroup: adGroup.resourceName,
           status: 'ENABLED',
           ad: {
-            finalUrls: creative.linkUrl ? [creative.linkUrl] : [],
+            finalUrls: creative.destinationUrl ? [creative.destinationUrl] : [],
             responsiveDisplayAd: {
               headlines: [
                 { text: creative.headline || 'Your Ad Headline' },
@@ -331,12 +332,12 @@ export class GoogleAdsApiClient {
               longHeadline: { text: creative.headline || 'Your Long Headline' },
               marketingImages: [
                 {
-                  asset: await this.uploadImage(creative.imageUrl),
+                  asset: await this.uploadImage(primaryImage.url),
                 },
               ],
-              squareMarketingImages: creative.imageUrl ? [
+              squareMarketingImages: primaryImage.url ? [
                 {
-                  asset: await this.uploadImage(creative.imageUrl),
+                  asset: await this.uploadImage(primaryImage.url),
                 },
               ] : undefined,
               businessName: 'Your Business',

@@ -89,12 +89,14 @@ export class TikTokApiClient {
     let videoId: string | undefined;
     let imageIds: string[] | undefined;
 
-    if (campaignData.creative.videoUrl) {
-      const videoUpload = await this.uploadVideo(campaignData.creative.videoUrl);
+    const primaryMedia = campaignData.creative.media?.[0];
+
+    if (primaryMedia?.type === 'video') {
+      const videoUpload = await this.uploadVideo(primaryMedia.url);
       videoId = videoUpload.data.video_id;
       console.log('[TikTokApiClient] Video uploaded:', videoId);
-    } else if (campaignData.creative.imageUrl) {
-      const imageUpload = await this.uploadImage(campaignData.creative.imageUrl);
+    } else if (primaryMedia?.type === 'image') {
+      const imageUpload = await this.uploadImage(primaryMedia.url);
       imageIds = [imageUpload.data.image_id];
       console.log('[TikTokApiClient] Image uploaded:', imageIds[0]);
     }
@@ -278,10 +280,10 @@ export class TikTokApiClient {
 
       // Call to action
       call_to_action: this.mapCallToAction(creative.callToAction),
-      landing_page_url: creative.linkUrl,
+      landing_page_url: creative.destinationUrl,
 
       // Display name
-      display_name: creative.displayUrl || 'Your Brand',
+      display_name: 'Your Brand',
 
       // Identity (optional - for TikTok page promotion)
       identity_type: 'CUSTOMIZED_USER',

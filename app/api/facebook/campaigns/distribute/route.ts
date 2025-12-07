@@ -72,7 +72,7 @@ export async function POST(req: Request) {
       console.log('[API /facebook/campaigns/distribute] Campaign distributed successfully:', {
         campaignId: result.campaignId,
         adSetId: result.adSetId,
-        adId: result.ad Id,
+        adId: result.adId,
       });
 
       return NextResponse.json({

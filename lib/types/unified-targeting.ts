@@ -90,6 +90,14 @@ export interface GoogleTargeting {
   remarketingLists?: string[];
   customAffinity?: string[];
   customIntent?: string[];
+  customAudiences?: string[];
+  householdIncome?: string[];
+  deviceTypes?: string[];
+  networkSettings?: {
+    googleSearch?: boolean;
+    searchPartners?: boolean;
+    displayNetwork?: boolean;
+  };
 }
 
 // Unified Creative (for ad content)

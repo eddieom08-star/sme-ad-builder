@@ -151,12 +151,12 @@ export class GoogleCampaignDistributor {
         errors.push('Ad description must be 90 characters or less for Google Ads');
       }
 
-      if (!campaignData.creative.linkUrl) {
+      if (!campaignData.creative.destinationUrl) {
         errors.push('Destination URL is required');
       } else {
         // Validate URL format
         try {
-          new URL(campaignData.creative.linkUrl);
+          new URL(campaignData.creative.destinationUrl);
         } catch {
           errors.push('Invalid destination URL format');
         }
@@ -231,17 +231,18 @@ export class GoogleCampaignDistributor {
     displayAdPreview: string;
   } {
     const creative = campaignData.creative;
-    const displayUrl = creative.displayUrl || new URL(creative.linkUrl || 'https://example.com').hostname;
+    const displayUrl = creative.destinationUrl ? new URL(creative.destinationUrl).hostname : 'example.com';
+    const primaryImage = creative.media?.[0];
 
     return {
       searchAdPreview: `
 Ad - ${displayUrl}
 ${creative.headline}
 ${creative.description}
-${creative.linkUrl}
+${creative.destinationUrl}
       `.trim(),
       displayAdPreview: `
-[Image: ${creative.imageUrl || 'No image'}]
+[Image: ${primaryImage?.url || 'No image'}]
 ${creative.headline}
 ${creative.description}
 [Button: ${creative.callToAction || 'Learn More'}]
