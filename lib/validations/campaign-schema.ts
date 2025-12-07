@@ -25,6 +25,11 @@ export const targetingSchema = z.object({
   interests: z.array(z.string()).default([]),
   behaviors: z.array(z.string()).default([]),
   languages: z.array(z.string()).default(['English']),
+  linkedinTargeting: z.object({
+    jobTitles: z.array(z.string()).default([]),
+    industries: z.array(z.string()).default([]),
+    companySizes: z.array(z.string()).default([]),
+  }).optional(),
 }).refine(
   (data) => data.ageMin < data.ageMax,
   {
@@ -176,6 +181,11 @@ export const createCampaignRequestSchema = z.object({
     locations: z.array(z.string()).optional(),
     interests: z.array(z.string()).optional(),
     behaviors: z.array(z.string()).optional(),
+    linkedinTargeting: z.object({
+      jobTitles: z.array(z.string()).optional(),
+      industries: z.array(z.string()).optional(),
+      companySizes: z.array(z.string()).optional(),
+    }).optional(),
   }),
   status: z.enum(['draft', 'active', 'paused']).default('draft'),
 });

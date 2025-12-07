@@ -23,6 +23,11 @@ export interface Targeting {
   interests: string[];
   behaviors: string[];
   languages?: string[];
+  linkedinTargeting?: {
+    jobTitles: string[];
+    industries: string[];
+    companySizes: string[];
+  };
 }
 
 export interface AdCreative {
@@ -141,6 +146,11 @@ const initialState = {
     interests: [],
     behaviors: [],
     languages: ['English'],
+    linkedinTargeting: {
+      jobTitles: [],
+      industries: [],
+      companySizes: [],
+    },
   },
 
   budgetType: 'daily' as BudgetType,
@@ -155,6 +165,8 @@ const initialState = {
 
   isDraft: false,
   validationErrors: {},
+  savedCampaignId: undefined,
+  lastSaved: undefined,
 };
 
 export const useWizardStore = create<WizardState>()(
@@ -304,18 +316,32 @@ export const useWizardStore = create<WizardState>()(
             }
 
             // Warning if no interests (not blocking)
-            if (state.targeting.interests.length === 0) {
+            if (state.targeting.interests.length === 0 && !state.platforms.includes('linkedin')) {
               errors.interests = ['Consider adding interests for better targeting (optional)'];
+            }
+
+            // LinkedIn specific targeting validation
+            if (state.platforms.includes('linkedin')) {
+              const { jobTitles, industries, companySizes } = state.targeting.linkedinTargeting || {};
+              if ((!jobTitles?.length) && (!industries?.length) && (!companySizes?.length)) {
+                errors.linkedinTargeting = ['Add at least one professional targeting criteria (Job Title, Industry, or Company Size)'];
+              }
             }
             break;
           }
 
           case 3: {
             // Budget validation
-            const minBudget = state.budgetType === 'daily' ? 5 : 35;
+            let minBudget = state.budgetType === 'daily' ? 5 : 35;
+
+            // LinkedIn requires higher minimum budget
+            if (state.platforms.includes('linkedin')) {
+              minBudget = state.budgetType === 'daily' ? 10 : 100;
+            }
+
             if (state.budgetAmount < minBudget) {
               errors.budgetAmount = [
-                `Minimum ${state.budgetType} budget is $${minBudget}`
+                `Minimum ${state.budgetType} budget is $${minBudget}${state.platforms.includes('linkedin') ? ' for LinkedIn' : ''}`
               ];
             }
 
@@ -420,9 +446,12 @@ export const useWizardStore = create<WizardState>()(
             }
 
             // Validate step 3 inline
-            const minBudget = state.budgetType === 'daily' ? 5 : 35;
+            let minBudget = state.budgetType === 'daily' ? 5 : 35;
+            if (state.platforms.includes('linkedin')) {
+              minBudget = state.budgetType === 'daily' ? 10 : 100;
+            }
             if (state.budgetAmount < minBudget) {
-              errors.budgetAmount = [`Minimum ${state.budgetType} budget is $${minBudget}`];
+              errors.budgetAmount = [`Minimum ${state.budgetType} budget is $${minBudget}${state.platforms.includes('linkedin') ? ' for LinkedIn' : ''}`];
             }
 
             // Validate step 4 inline
@@ -568,10 +597,10 @@ export const useWizardStore = create<WizardState>()(
               genders: campaign.targeting?.genders || ['all'],
               locations: Array.isArray(campaign.targeting?.locations)
                 ? campaign.targeting.locations.map((loc: any) =>
-                    typeof loc === 'string'
-                      ? { type: 'country' as const, name: loc }
-                      : loc
-                  )
+                  typeof loc === 'string'
+                    ? { type: 'country' as const, name: loc }
+                    : loc
+                )
                 : [],
               interests: campaign.targeting?.interests || [],
               behaviors: campaign.targeting?.behaviors || [],

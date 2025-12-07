@@ -54,10 +54,14 @@ export function BudgetScheduleStep() {
     bidCap,
     updateBudget,
     validationErrors,
+    platforms,
   } = useWizardStore();
 
   const currencySymbol = CURRENCIES.find(c => c.value === currency)?.symbol || '$';
-  const minBudget = budgetType === 'daily' ? 5 : 35;
+  let minBudget = budgetType === 'daily' ? 5 : 35;
+  if (platforms.includes('linkedin')) {
+    minBudget = budgetType === 'daily' ? 10 : 100;
+  }
 
   // Calculate campaign duration and total budget
   const start = new Date(startDate);

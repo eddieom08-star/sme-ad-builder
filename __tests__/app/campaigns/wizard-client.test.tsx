@@ -78,6 +78,9 @@ describe('CampaignWizardClient - Smart Reset Logic', () => {
     // Setup: No edit parameter, no saved campaign
     mockGet.mockReturnValue(null)
 
+    // Dirty the state so reset is triggered
+    useWizardStore.getState().setStep(2)
+
     const resetSpy = jest.spyOn(useWizardStore.getState(), 'reset')
 
     render(<CampaignWizardClient />)
