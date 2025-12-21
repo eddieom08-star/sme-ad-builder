@@ -122,7 +122,7 @@ export function ResponsiveSidebar() {
 
       {/* Account Section */}
       {showLabels && (
-        <div className="border-t p-2 space-y-1">
+        <div className="border-t p-2 space-y-1 pb-16">
           <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Account
           </div>
