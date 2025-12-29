@@ -254,6 +254,158 @@ export const campaignMetricsRelations = relations(campaignMetrics, ({ one }) => 
 }));
 
 // ============================================================================
+// WALLET/PREPAYMENT TABLE
+// ============================================================================
+
+export const wallets = pgTable("wallets", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id").notNull().unique(),
+
+  // Balance tracking
+  balance: decimal("balance", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalDeposited: decimal("total_deposited", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalSpent: decimal("total_spent", { precision: 12, scale: 2 }).notNull().default("0"),
+
+  // Settings
+  currency: text("currency").notNull().default("GBP"),
+  lowBalanceThreshold: decimal("low_balance_threshold", { precision: 12, scale: 2 }).default("100"),
+  autoReloadEnabled: boolean("auto_reload_enabled").default(false),
+  autoReloadAmount: decimal("auto_reload_amount", { precision: 12, scale: 2 }),
+  autoReloadThreshold: decimal("auto_reload_threshold", { precision: 12, scale: 2 }),
+
+  // Status
+  status: text("status", {
+    enum: ["active", "suspended", "frozen"]
+  }).notNull().default("active"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  businessIdx: index("wallet_business_idx").on(table.businessId),
+}));
+
+export const walletsRelations = relations(wallets, ({ one, many }) => ({
+  business: one(businesses, {
+    fields: [wallets.businessId],
+    references: [businesses.id],
+  }),
+  transactions: many(transactions),
+}));
+
+// ============================================================================
+// TRANSACTIONS TABLE
+// ============================================================================
+
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  walletId: integer("wallet_id").notNull(),
+  businessId: integer("business_id").notNull(),
+
+  // Transaction details
+  type: text("type", {
+    enum: ["deposit", "withdrawal", "spend", "refund", "adjustment"]
+  }).notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  balanceBefore: decimal("balance_before", { precision: 12, scale: 2 }).notNull(),
+  balanceAfter: decimal("balance_after", { precision: 12, scale: 2 }).notNull(),
+
+  // Payment details (for deposits)
+  paymentMethod: text("payment_method"), // "card", "bank_transfer", "stripe"
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  stripeChargeId: text("stripe_charge_id"),
+
+  // Reference details
+  referenceType: text("reference_type"), // "campaign", "ad", "manual"
+  referenceId: integer("reference_id"),
+
+  // Metadata
+  description: text("description").notNull(),
+  metadata: jsonb("metadata").$type<{
+    campaignName?: string;
+    adName?: string;
+    platform?: string;
+    invoiceUrl?: string;
+    receiptUrl?: string;
+    failureReason?: string;
+  }>(),
+
+  // Status
+  status: text("status", {
+    enum: ["pending", "completed", "failed", "cancelled", "refunded"]
+  }).notNull().default("pending"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  walletIdx: index("transaction_wallet_idx").on(table.walletId),
+  businessIdx: index("transaction_business_idx").on(table.businessId),
+  typeIdx: index("transaction_type_idx").on(table.type),
+  statusIdx: index("transaction_status_idx").on(table.status),
+  stripePaymentIntentIdx: index("transaction_stripe_payment_intent_idx").on(table.stripePaymentIntentId),
+  createdAtIdx: index("transaction_created_at_idx").on(table.createdAt),
+}));
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  wallet: one(wallets, {
+    fields: [transactions.walletId],
+    references: [wallets.id],
+  }),
+  business: one(businesses, {
+    fields: [transactions.businessId],
+    references: [businesses.id],
+  }),
+}));
+
+// ============================================================================
+// BILLING ALERTS TABLE
+// ============================================================================
+
+export const billingAlerts = pgTable("billing_alerts", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id").notNull(),
+  walletId: integer("wallet_id").notNull(),
+
+  // Alert details
+  type: text("type", {
+    enum: ["low_balance", "auto_reload_failed", "spend_limit_reached", "campaign_paused"]
+  }).notNull(),
+  severity: text("severity", {
+    enum: ["info", "warning", "critical"]
+  }).notNull(),
+  message: text("message").notNull(),
+
+  // Trigger data
+  currentBalance: decimal("current_balance", { precision: 12, scale: 2 }),
+  threshold: decimal("threshold", { precision: 12, scale: 2 }),
+
+  // Status
+  acknowledged: boolean("acknowledged").default(false),
+  acknowledgedAt: timestamp("acknowledged_at"),
+  acknowledgedBy: integer("acknowledged_by"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  businessIdx: index("billing_alert_business_idx").on(table.businessId),
+  walletIdx: index("billing_alert_wallet_idx").on(table.walletId),
+  acknowledgedIdx: index("billing_alert_acknowledged_idx").on(table.acknowledged),
+}));
+
+export const billingAlertsRelations = relations(billingAlerts, ({ one }) => ({
+  business: one(businesses, {
+    fields: [billingAlerts.businessId],
+    references: [businesses.id],
+  }),
+  wallet: one(wallets, {
+    fields: [billingAlerts.walletId],
+    references: [wallets.id],
+  }),
+  acknowledgedByUser: one(users, {
+    fields: [billingAlerts.acknowledgedBy],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
 // ACTIVITIES/AUDIT LOG TABLE
 // ============================================================================
 
@@ -336,6 +488,22 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
   createdAt: true,
 });
 
+export const insertWalletSchema = createInsertSchema(wallets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTransactionSchema = createInsertSchema(transactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBillingAlertSchema = createInsertSchema(billingAlerts).omit({
+  id: true,
+  createdAt: true,
+});
+
 // ============================================================================
 // TYPE EXPORTS
 // ============================================================================
@@ -360,3 +528,12 @@ export type InsertCampaignMetric = z.infer<typeof insertCampaignMetricSchema>;
 
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
+
+export type Wallet = typeof wallets.$inferSelect;
+export type InsertWallet = z.infer<typeof insertWalletSchema>;
+
+export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+
+export type BillingAlert = typeof billingAlerts.$inferSelect;
+export type InsertBillingAlert = z.infer<typeof insertBillingAlertSchema>;

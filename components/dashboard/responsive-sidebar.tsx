@@ -13,6 +13,7 @@ import {
   Menu,
   ChevronsRight,
   HelpCircle,
+  Wallet,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,11 @@ const navItems = [
 ];
 
 const accountItems = [
+  {
+    title: "Wallet",
+    href: "/wallet",
+    icon: Wallet,
+  },
   {
     title: "Settings",
     href: "/settings",
